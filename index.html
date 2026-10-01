@@ -141,8 +141,10 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 .stats span{font-size:12.5px;color:var(--ink-2)}
 @media (min-width:900px){.stats{margin:16px -20px -20px}.stats>div{padding:14px 20px}}
 
-.home-grid{display:grid;gap:0}
-@media (min-width:1000px){.home-grid{grid-template-columns:1.15fr 1fr;gap:26px;align-items:start}.home-grid .sec:first-child{margin-top:28px}}
+.home-grid{display:grid;gap:0;grid-template-columns:minmax(0,1fr)}
+.home-grid>*{min-width:0}
+.sh-head h2:focus{outline:none}
+@media (min-width:1000px){.home-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:26px;align-items:start}.home-grid .sec:first-child{margin-top:28px}}
 
 /* ---------- daftar tagihan ---------- */
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
@@ -540,6 +542,14 @@ var KosCore = (function () {
     return isiTemplate(tpl, varPesan(t, today));
   }
 
+  function pesanKuitansi(b, t, s) {
+    return isiTemplate(s.templateKuitansi, {
+      nama: t.penyewa ? t.penyewa.nama : '', kos: t.kos ? t.kos.nama : '', kamar: t.kamar ? t.kamar.nomor : '',
+      periode: t.periode ? fmtPeriode(t.periode) : '', dibayar: rupiah(b.nominal), tanggal_bayar: fmtTgl(b.tanggal),
+      status_lunas: t.sisa <= 0 ? 'Tagihan bulan ini sudah lunas.' : 'Sisa tagihan ' + rupiah(t.sisa) + '.'
+    });
+  }
+
   /** daftar pesan otomatis yang harus dikirim hari ini */
   function rencanaPengingat(tagihan, s, today, sudahTerkirim) {
     var hs = Number(s.hariSebelum) || 3;
@@ -592,6 +602,7 @@ var KosCore = (function () {
       return {
         kos: db.all('Kos'), kamar: db.all('Kamar'), penyewa: db.all('Penyewa'),
         tagihan: db.all('Tagihan'), pembayaran: db.all('Pembayaran'), pengeluaran: db.all('Pengeluaran'),
+        log: db.all('LogPengingat').slice(-400).map(function (l) { return { tanggal: l.tanggal, tagihanId: l.tagihanId, jenis: l.jenis, status: l.status }; }),
         settings: publicSettings(db.getSettings()), today: today
       };
     },
@@ -768,7 +779,7 @@ var KosCore = (function () {
     periodeOf: periodeOf, fmtTgl: fmtTgl, fmtTglPendek: fmtTglPendek, fmtPeriode: fmtPeriode, fmtHari: fmtHari,
     rupiah: rupiah, rupiahSingkat: rupiahSingkat, normalWa: normalWa, newId: newId, isiTemplate: isiTemplate,
     rencanaTagihan: rencanaTagihan, pastikanTagihan: pastikanTagihan, hitung: hitung, statusKamar: statusKamar,
-    varPesan: varPesan, pesanUntuk: pesanUntuk, rencanaPengingat: rencanaPengingat,
+    varPesan: varPesan, pesanUntuk: pesanUntuk, pesanKuitansi: pesanKuitansi, rencanaPengingat: rencanaPengingat,
     publicSettings: publicSettings, jalankan: jalankan, bersihkan: bersihkan
   };
 })();
@@ -816,7 +827,9 @@ const S = { data: null, tg: [], ks: {}, today: null, bulan: null, kasBulan: null
 async function api(action, data) {
   if (DEMO) return demoApi(action, data);
   const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, data, pin: S.pin }) });
-  const j = await res.json();
+  let j;
+  try { j = await res.json(); } catch (e) { throw new Error('Server tidak membalas dengan benar. Cek URL /exec dan akses deployment "Siapa saja".'); }
+  if (j.ok && j.data === undefined) throw new Error('Server membalas tanpa data. Tempel ulang Code.gs terbaru, lalu Kelola deployment → Edit → Versi baru → Terapkan.');
   if (!j.ok) {
     if (j.kode === 'PIN') { store.del('kosPin'); S.pin = ''; }
     throw new Error(j.error || 'Terjadi kesalahan');
@@ -825,6 +838,7 @@ async function api(action, data) {
 }
 
 function setData(d) {
+  if (!d.log) d.log = [];
   S.data = d; S.today = d.today;
   S.tg = C.hitung(d, d.today, d.settings.hariSebelum);
   S.ks = C.statusKamar(d, S.tg);
@@ -855,6 +869,8 @@ async function aksi(action, data, pesanOk) {
   } catch (e) {
     toast(e.message, true);
     document.querySelectorAll('.sheet [type=submit], .sheet .btn').forEach(b => b.disabled = false);
+    // muat ulang diam-diam supaya layar sesuai isi Google Sheets
+    if (!DEMO) api('getAll').then(d => d && d.kos && setData(d)).catch(() => { });
     throw e;
   } finally { busy(false); }
 }
@@ -883,7 +899,7 @@ function demoLoad() {
 }
 function demoSave() { store.set(DEMO_KEY, JSON.stringify(demoStore)); }
 async function demoApi(action, data) {
-  if (action === 'tesWa' || action === 'kirimSekarang') throw new Error('Pesan WhatsApp otomatis aktif setelah aplikasi terhubung ke Google Sheets.');
+  if (action === 'tesWa' || action === 'kirimSekarang' || action === 'kirimWa') throw new Error('Pesan WhatsApp otomatis aktif setelah aplikasi terhubung ke Google Sheets.');
   const st = demoLoad(), db = MemDB(st), today = demoToday();
   const hasil = C.jalankan(db, action, data, today);
   const semua = C.jalankan(db, 'getAll', {}, today);
@@ -1021,7 +1037,7 @@ function rowTagihan(t, withBtns = true) {
     <div class="row-side">
       <div class="amt">${C.rupiah(t.status === 'lunas' ? t.nominal : t.sisa)}</div>
       ${withBtns && t.status !== 'lunas' ? `<div class="row-btns">
-        ${wa ? `<a class="icon-btn wa" href="${wa}" target="_blank" rel="noopener" aria-label="Kirim pengingat WhatsApp ke ${esc(p.nama)}" title="Kirim pengingat WhatsApp">${IC.wa}</a>` : ''}
+        ${wa ? `<button class="icon-btn wa" data-act="kirimTagihan" data-id="${t.id}" aria-label="Kirim pengingat WhatsApp ke ${esc(p.nama)}" title="Kirim pengingat WhatsApp">${IC.wa}</button>` : ''}
         <button class="btn sm" data-act="bayar" data-id="${t.id}">Catat bayar</button></div>` : ''}
     </div>
   </div>`;
@@ -1241,7 +1257,8 @@ function vAtur() {
       <div class="field"><label for="f-nama">Nama usaha</label><input class="input" id="f-nama" name="namaUsaha" value="${esc(s.namaUsaha)}" required></div>
       ${DEMO ? '' : `<div class="field"><label for="f-pin">PIN baru</label><input class="input" id="f-pin" name="pinBaru" inputmode="numeric" pattern="[0-9]{4,8}" placeholder="Kosongkan kalau tidak diganti" autocomplete="new-password"><span class="help">4 sampai 8 angka. Dipakai untuk masuk ke aplikasi.</span></div>`}
       <div class="divider"></div>
-      <h2>Pengingat WhatsApp otomatis</h2><p class="desc">Dikirim tiap pagi jam 08.00 WITA lewat Fonnte. Tombol WhatsApp di daftar tagihan tetap bisa dipakai tanpa Fonnte.</p>
+      <h2>Pengingat WhatsApp otomatis</h2><p class="desc">Dikirim tiap pagi jam 08.00 WITA lewat Fonnte. Dengan Fonnte, tombol WhatsApp di tagihan juga langsung mengirim pesan tanpa membuka WhatsApp.</p>
+      ${s.adaToken ? '' : `<div class="note" style="margin-bottom:14px"><b>Cara menghubungkan:</b> daftar di fonnte.com, buka menu Device, tambah nomor WhatsApp pengirim lalu scan QR dari HP, kemudian salin Token dan tempel di bawah.</div>`}
       <div class="field"><label for="f-token">Token Fonnte</label><input class="input" id="f-token" name="fonnteToken" placeholder="${s.adaToken ? 'Tersimpan: ' + esc(s.tokenTersamar) + '. Isi untuk mengganti' : 'Tempel token dari fonnte.com'}" autocomplete="off"></div>
       <div class="field"><label for="f-wa">WhatsApp pemilik</label><input class="input" id="f-wa" name="waPemilik" inputmode="tel" value="${esc(s.waPemilik)}" placeholder="08xxxxxxxxxx"><span class="help">Menerima ringkasan harian siapa saja yang telat dan jatuh tempo.</span></div>
       <label class="switch"><span><b>Kirim ke penyewa</b><br><span class="small muted">Pengingat langsung ke WhatsApp penyewa</span></span><input type="checkbox" name="kirimPenyewa" ${s.kirimPenyewa === 'ya' ? 'checked' : ''}></label>
@@ -1319,7 +1336,7 @@ function openKamar(id) {
   const wa = next ? waTagihan(next) : '';
   sheet(`${head(esc(p.nama), `${esc(kos.nama)}, kamar ${esc(km.nomor)}`)}
     ${call}
-    <div class="sh-actions" style="margin:0 0 16px">${next ? `<button class="btn" data-act="bayar" data-id="${next.id}">Catat bayar</button>` : ''}${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener">${IC.wa}Ingatkan via WA</a>` : ''}</div>
+    <div class="sh-actions" style="margin:0 0 16px">${next ? `<button class="btn" data-act="bayar" data-id="${next.id}">Catat bayar</button>` : ''}${wa ? `<button class="btn ghost" data-act="kirimTagihan" data-id="${next.id}">${IC.wa}Ingatkan via WA</button>` : ''}</div>
     <dl class="info">
       <dt>WhatsApp</dt><dd>${p.wa ? `<a href="https://wa.me/${C.normalWa(p.wa)}" target="_blank" rel="noopener">${esc(p.wa)}</a>` : '-'}</dd>
       <dt>Sewa per bulan</dt><dd>${C.rupiah(p.harga)}</dd>
@@ -1367,7 +1384,8 @@ function openTagihan(id) {
     <div class="callout ${t.status}">${t.status === 'lunas' ? 'Tagihan ini sudah lunas.' : teksTempo(t) + '. Sisa ' + C.rupiah(t.sisa) + '.'}</div>
     <dl class="info"><dt>Jatuh tempo</dt><dd>${C.fmtTgl(t.jatuhTempo)}</dd><dt>Nominal</dt><dd>${C.rupiah(t.nominal)}</dd><dt>Sudah dibayar</dt><dd>${C.rupiah(t.dibayar)}</dd>${t.catatan ? `<dt>Catatan</dt><dd>${esc(t.catatan)}</dd>` : ''}</dl>
     ${bayar.length ? `<div class="flabel" style="margin-bottom:8px">Pembayaran</div><div class="mini-list">${bayar.map(b => `<div class="row tap" data-act="kuitansi" data-id="${b.id}"><div class="row-main"><div class="row-title" style="font-weight:650">${C.fmtTgl(b.tanggal)}</div><div class="row-meta">${esc(b.metode)}${b.catatan ? ', ' + esc(b.catatan) : ''}</div></div><div class="amt">${C.rupiah(b.nominal)}</div></div>`).join('')}</div>` : ''}
-    ${t.status !== 'lunas' ? `<div class="sh-actions" style="margin-bottom:8px"><button class="btn" data-act="bayar" data-id="${t.id}">Catat bayar</button>${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener">${IC.wa}Ingatkan</a>` : ''}</div>` : ''}
+    ${logHTML(t.id)}
+    ${t.status !== 'lunas' ? `<div class="sh-actions" style="margin-bottom:8px"><button class="btn" data-act="bayar" data-id="${t.id}">Catat bayar</button>${wa ? `<button class="btn ghost" data-act="kirimTagihan" data-id="${t.id}">${IC.wa}Ingatkan</button>` : ''}</div>` : ''}
     <div class="sh-actions"><button class="btn ghost" data-act="ubahTagihan" data-id="${t.id}">${IC.edit}Ubah nominal</button>${t.kamar ? `<button class="btn ghost" data-act="kamar" data-id="${t.kamar.id}">Lihat kamar</button>` : ''}</div>`);
 }
 
@@ -1393,20 +1411,53 @@ function openKuitansi(bayarId) {
   const p = penyewaById(b.penyewaId) || {}, kos = kosById(b.kosId) || {}, km = t.kamar || {};
   const s = S.data.settings;
   const lunas = t.status === 'lunas';
-  const pesan = C.isiTemplate(s.templateKuitansi, {
-    nama: p.nama, kos: kos.nama, kamar: km.nomor, periode: t.periode ? C.fmtPeriode(t.periode) : '',
-    dibayar: C.rupiah(b.nominal), tanggal_bayar: C.fmtTgl(b.tanggal),
-    status_lunas: lunas ? 'Tagihan bulan ini sudah lunas.' : 'Sisa tagihan ' + C.rupiah(t.sisa) + '.'
-  });
-  const wa = waLink(p.wa, pesan);
+  const wa = C.normalWa(p.wa);
   sheet(`${head('Kuitansi pembayaran')}
     <div class="receipt">
       <div class="receipt-top"><div><b>${esc(s.namaUsaha)}</b><small>${esc(kos.nama || '')}${kos.alamat ? ', ' + esc(kos.alamat) : ''}</small></div><div style="text-align:right"><small>No.</small><b style="font-size:13px">${esc(b.id.slice(-7).toUpperCase())}</b></div></div>
       <dl><dt>Diterima dari</dt><dd>${esc(p.nama || '-')}</dd><dt>Kamar</dt><dd>${esc(km.nomor || '-')}</dd><dt>Untuk sewa</dt><dd>${t.periode ? C.fmtPeriode(t.periode) : '-'}</dd><dt>Tanggal</dt><dd>${C.fmtTgl(b.tanggal)}</dd><dt>Cara bayar</dt><dd>${esc(b.metode)}</dd>${!lunas && t.sisa ? `<dt>Sisa tagihan</dt><dd class="neg">${C.rupiah(t.sisa)}</dd>` : ''}</dl>
       <div class="receipt-amt"><span class="muted">Jumlah</span>${lunas ? '<span class="stamp">LUNAS</span>' : ''}<b>${C.rupiah(b.nominal)}</b></div>
     </div>
-    <div class="sh-actions" style="margin-top:16px">${wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener">${IC.wa}Kirim ke WA penyewa</a>` : ''}<button class="btn ghost" data-act="cetak">${IC.print}Cetak</button></div>
+    <div class="sh-actions" style="margin-top:16px">${wa ? `<button class="btn" data-act="kirimKuitansi" data-id="${b.id}">${IC.wa}Kirim ke WA penyewa</button>` : ''}<button class="btn ghost" data-act="cetak">${IC.print}Cetak</button></div>
     <div style="margin-top:14px;text-align:center"><button class="btn danger sm" data-act="hapusBayar" data-id="${b.id}">${IC.trash}Batalkan pembayaran ini</button></div>`);
+}
+
+const JENIS_LOG = { sebelum: 'Otomatis, sebelum jatuh tempo', hari_ini: 'Otomatis, hari jatuh tempo', telat: 'Otomatis, telat bayar', manual: 'Dikirim dari aplikasi', kuitansi: 'Kuitansi' };
+function logHTML(tagihanId) {
+  const l = (S.data.log || []).filter(x => x.tagihanId === tagihanId).slice(-5).reverse();
+  if (!l.length) return '';
+  return `<div class="flabel" style="margin-bottom:8px">Pesan WhatsApp terkirim</div><div class="mini-list">${l.map(x => {
+    const ok = String(x.status).indexOf('terkirim') === 0;
+    return `<div class="row"><div class="row-main"><div class="row-title" style="font-weight:650">${C.fmtTgl(x.tanggal)}</div><div class="row-meta">${esc(JENIS_LOG[x.jenis] || x.jenis)}</div></div><span class="pill ${ok ? 'lunas' : 'telat'}">${ok ? 'Terkirim' : 'Gagal'}</span></div>`;
+  }).join('')}</div>`;
+}
+
+/* kirim pesan: pratinjau, bisa diedit, lalu kirim lewat Fonnte (atau buka WhatsApp) */
+function openKirim(jenis, id) {
+  const s = S.data.settings;
+  let t, pesan, judul;
+  if (jenis === 'kuitansi') {
+    const b = S.data.pembayaran.find(x => x.id === id); if (!b) return;
+    t = tagihanById(b.tagihanId); if (!t) return;
+    pesan = C.pesanKuitansi(b, t, s); judul = 'Kirim kuitansi';
+  } else {
+    t = tagihanById(id); if (!t) return;
+    pesan = C.pesanUntuk(t, s, S.today); judul = 'Kirim pengingat';
+  }
+  const p = t.penyewa || {};
+  const fonnte = !DEMO && s.adaToken;
+  const w = sheet(`${head(judul, `ke ${esc(p.nama)}, ${esc(p.wa)}`)}
+    <form data-form="kirim">
+      <input type="hidden" name="jenis" value="${jenis}"><input type="hidden" name="id" value="${id}">
+      <div class="field"><label for="w-pesan">Isi pesan</label><textarea class="textarea" id="w-pesan" name="pesan" style="min-height:140px">${esc(pesan)}</textarea>
+      <span class="help">Bisa diubah sebelum dikirim. Isi pesan bawaan diatur di Pengaturan.</span></div>
+      ${fonnte ? '' : `<div class="note" style="margin-bottom:14px">${DEMO ? 'Di mode contoh pesan dibuka lewat WhatsApp.' : '<b>Belum terhubung ke Fonnte.</b> Isi token Fonnte di Pengaturan supaya pesan langsung terkirim tanpa membuka WhatsApp.'}</div>`}
+      <div class="sh-actions">
+        <button type="button" class="btn ${fonnte ? 'ghost' : ''}" data-act="bukaWa">${IC.wa}${fonnte ? 'Buka WhatsApp' : 'Kirim lewat WhatsApp'}</button>
+        ${fonnte ? `<button class="btn" type="submit">${IC.send}Kirim sekarang</button>` : ''}
+      </div>
+    </form>`);
+  w.querySelector('[data-act=bukaWa]').dataset.wa = C.normalWa(p.wa);
 }
 
 /* ---------- sheet: kos & kamar ---------- */
@@ -1471,6 +1522,13 @@ const ACT = {
   tagihan: d => openTagihan(d.id),
   bayar: d => openBayar(d.id),
   kuitansi: d => openKuitansi(d.id),
+  kirimTagihan: d => openKirim('tagihan', d.id),
+  kirimKuitansi: d => openKirim('kuitansi', d.id),
+  bukaWa(d) {
+    const pesan = $('#w-pesan').value;
+    window.open('https://wa.me/' + d.wa + '?text=' + encodeURIComponent(pesan), '_blank', 'noopener');
+    closeSheet();
+  },
   cetak: () => window.print(),
   bukaKos: d => { location.hash = '#/kos/' + d.id; },
   tambahKos: () => formKos(),
@@ -1531,7 +1589,7 @@ const ACT = {
   async tesWa() { busy(true); try { await api('tesWa'); toast('Pesan tes terkirim ke WhatsApp pemilik'); } catch (e) { toast(e.message, true); } finally { busy(false); } },
   async kirimSekarang() {
     busy(true);
-    try { const r = await api('kirimSekarang'); toast(r.catatan || `Terkirim ke ${r.penyewa} penyewa${r.gagal ? ', ' + r.gagal + ' gagal' : ''}${r.pemilik ? ', ringkasan ke pemilik' : ''}`, !!r.catatan); }
+    try { const r = await api('kirimSekarang'); if (r.semua) setData(r.semua); toast(r.catatan || `Terkirim ke ${r.penyewa} penyewa${r.gagal ? ', ' + r.gagal + ' gagal' : ''}${r.pemilik ? ', ringkasan ke pemilik' : ''}`, !!r.catatan); }
     catch (e) { toast(e.message, true); } finally { busy(false); }
   },
   async resetDemo() {
@@ -1553,6 +1611,18 @@ const FORM = {
   async bayar(v) {
     const b = await aksi('bayar', { tagihanId: v.tagihanId, nominal: angka(v.nominal), tanggal: v.tanggal, metode: v.metode, catatan: v.catatan }, 'Pembayaran tersimpan');
     openKuitansi(b.id);
+  },
+  async kirim(v) {
+    const btn = sheetEl && sheetEl.querySelector('[type=submit]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Mengirim...'; }
+    busy(true);
+    try {
+      const r = await api('kirimWa', v.jenis === 'kuitansi' ? { bayarId: v.id, pesan: v.pesan } : { tagihanId: v.id, pesan: v.pesan });
+      setData(r.semua); closeSheet(); toast('Pesan terkirim ke ' + r.nama);
+    } catch (e) {
+      toast(e.message, true);
+      if (btn) { btn.disabled = false; btn.innerHTML = IC.send + 'Kirim sekarang'; }
+    } finally { busy(false); }
   },
   async tagihan(v) { await aksi('ubahTagihan', { id: v.id, nominal: angka(v.nominal), jatuhTempo: v.jatuhTempo, catatan: v.catatan }, 'Tagihan diubah'); openTagihan(v.id); },
   async pengeluaran(v) { await aksi('savePengeluaran', { id: v.id, kosId: v.kosId, kategori: v.kategori, nominal: angka(v.nominal), tanggal: v.tanggal, keterangan: v.keterangan }, 'Pengeluaran tersimpan'); S.kasBulan = C.periodeOf(v.tanggal); closeSheet(); if (route().page !== 'kas') location.hash = '#/kas'; else render(); },

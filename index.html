@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E5C58">
+<title>Pembukuan Kos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECF1EF; --surface:#FFFFFF; --surface-2:#F5F8F7;
+  --ink:#16302D; --ink-2:#4F6662; --ink-3:#7F918E;
+  --line:#D9E2DF; --line-2:#C3D0CC;
+  --teal:#0E5C58; --teal-2:#0A4744; --teal-soft:#DDECE9;
+  --lunas:#2E8657; --lunas-soft:#DCF0E3; --lunas-ink:#1D5A3A;
+  --dekat:#C88A12; --dekat-soft:#FBEED0; --dekat-ink:#73500A;
+  --telat:#C0392F; --telat-soft:#F8DEDA; --telat-ink:#8E241C;
+  --r-lg:16px; --r-md:12px; --r-sm:8px;
+  --shadow:0 1px 2px rgba(22,48,45,.06),0 4px 14px rgba(22,48,45,.05);
+  --nav-h:66px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Plus Jakarta Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--teal)}
+:focus-visible{outline:2.5px solid var(--teal);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- shell ---------- */
+.app{min-height:100vh}
+.side{display:none}
+.main{padding:16px 16px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));max-width:1080px;margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;letter-spacing:-.01em}
+.brand-mark{width:30px;height:34px;border-radius:9px 9px 3px 3px;background:var(--teal);position:relative;flex:none}
+.brand-mark::after{content:'';position:absolute;right:7px;top:17px;width:4px;height:4px;border-radius:50%;background:#fff}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.navlink{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;text-decoration:none;color:var(--ink-3);font-size:11.5px;font-weight:600;border-radius:10px}
+.navlink svg{width:23px;height:23px}
+.navlink.on{color:var(--teal)}
+.navlink.on svg{stroke-width:2.2}
+@media (min-width:900px){
+  .app{display:grid;grid-template-columns:236px 1fr}
+  .side{display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;padding:22px 14px;background:var(--surface);border-right:1px solid var(--line)}
+  .side .brand{padding:0 8px 22px}
+  .side .navlink{flex-direction:row;gap:12px;font-size:14.5px;padding:10px 12px;color:var(--ink-2)}
+  .side .navlink.on{background:var(--teal-soft);color:var(--teal-2)}
+  .side .navlink svg{width:20px;height:20px}
+  .side-foot{margin-top:auto;font-size:12.5px;color:var(--ink-3);padding:0 10px}
+  .bottomnav,.topbar .brand{display:none}
+  .main{padding:32px 36px 60px;width:100%}
+  .topbar{min-height:0;margin:0}
+}
+.demo-bar{background:var(--dekat-soft);color:var(--dekat-ink);font-size:13px;padding:8px 16px;text-align:center;border-bottom:1px solid #EFD9A6}
+.demo-bar b{font-weight:700}
+.busy{position:fixed;top:0;left:0;height:3px;width:100%;z-index:60;background:linear-gradient(90deg,transparent,var(--teal),transparent);background-size:40% 100%;background-repeat:no-repeat;animation:busy 1s linear infinite;display:none}
+.busy.on{display:block}
+@keyframes busy{from{background-position:-40% 0}to{background-position:140% 0}}
+
+/* ---------- type ---------- */
+h1{font-size:25px;line-height:1.22;letter-spacing:-.02em;margin:0;font-weight:800;text-wrap:balance}
+h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.datel{color:var(--ink-2);font-size:14px;font-weight:600;margin-bottom:6px}
+@media (min-width:900px){h1{font-size:30px}}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.pagehead p{margin:6px 0 0}
+.sec{margin-top:28px}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.sechead .hint{font-size:13px;color:var(--ink-3)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;background:var(--teal);color:#fff;font-weight:700;font-size:14.5px;padding:11px 16px;border-radius:11px;cursor:pointer;text-decoration:none;white-space:nowrap;min-height:44px}
+.btn:hover{background:var(--teal-2)}
+.btn svg{width:18px;height:18px}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line-2)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.soft{background:var(--teal-soft);color:var(--teal-2)}
+.btn.danger{background:var(--surface);color:var(--telat);border-color:#E9B8B2}
+.btn.danger.solid{background:var(--telat);color:#fff;border-color:var(--telat)}
+.btn.sm{padding:7px 12px;font-size:13.5px;min-height:36px;border-radius:9px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2);cursor:pointer;flex:none;text-decoration:none}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn.wa{color:#1A8F4E;border-color:#BFE3CC;background:#F1FAF4}
+.icon-btn:hover{background:var(--surface-2)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- surfaces ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.pad{padding:16px}
+@media (min-width:900px){.pad{padding:20px}}
+
+/* ---------- pintu kamar (elemen khas) ---------- */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.board.lg{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:9px}
+.door{position:relative;aspect-ratio:3/4;border-radius:10px 10px 3px 3px;border:1.6px solid var(--line-2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:750;font-size:12.5px;color:var(--ink);cursor:pointer;padding:0;min-width:0;transition:transform .12s}
+.board.lg .door{font-size:15px;border-radius:13px 13px 4px 4px}
+.door::after{content:none}
+.board.lg .door::after{content:'';position:absolute;right:6px;top:calc(50% - 5px);width:3px;height:10px;border-radius:2px;background:currentColor;opacity:.35}
+.door:hover{transform:translateY(-2px)}
+.door.belum{border-color:#8FB3AE}
+.door.lunas{background:var(--lunas-soft);border-color:var(--lunas);color:var(--lunas-ink)}
+.door.dekat{background:var(--dekat-soft);border-color:var(--dekat);color:var(--dekat-ink)}
+.door.telat{background:var(--telat);border-color:var(--telat);color:#fff}
+.door.kosong{background:transparent;border-style:dashed;border-color:#A9B8B5;color:var(--ink-3)}
+.door.kosong::after{display:none}
+.door.sm{width:38px;flex:none;font-size:12.5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:14px;border-radius:4px 4px 1px 1px;border:1.5px solid;display:inline-block}
+.legend .l-lunas{background:var(--lunas-soft);border-color:var(--lunas)}
+.legend .l-dekat{background:var(--dekat-soft);border-color:var(--dekat)}
+.legend .l-telat{background:var(--telat);border-color:var(--telat)}
+.legend .l-belum{background:#fff;border-color:#8FB3AE}
+.legend .l-kosong{border-style:dashed;border-color:#A9B8B5}
+
+/* ---------- beranda ---------- */
+.hero{padding:6px 0 4px}
+.hero h1{max-width:20ch}
+@media (min-width:900px){.hero h1{max-width:26ch}}
+.meter{margin-top:18px}
+.meter-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.meter-big{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.meter-of{color:var(--ink-2);font-size:14px}
+.bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--surface-2);margin:12px 0 10px;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+.bar .b-lunas{background:var(--lunas)}.bar .b-telat{background:var(--telat)}.bar .b-belum{background:#B9CBC7}
+.meter-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-2)}
+.meter-legend b{color:var(--ink);font-weight:700}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);margin:14px -16px -16px}
+.stats>div{padding:12px 16px;border-right:1px solid var(--line)}
+.stats>div:last-child{border-right:0}
+.stats b{display:block;font-size:19px;font-weight:800;letter-spacing:-.01em}
+.stats span{font-size:12.5px;color:var(--ink-2)}
+@media (min-width:900px){.stats{margin:16px -20px -20px}.stats>div{padding:14px 20px}}
+
+.home-grid{display:grid;gap:0}
+@media (min-width:1000px){.home-grid{grid-template-columns:1.15fr 1fr;gap:26px;align-items:start}.home-grid .sec:first-child{margin-top:28px}}
+
+/* ---------- daftar tagihan ---------- */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row.tap{cursor:pointer}
+.row.tap:hover{background:var(--surface-2)}
+.row-main{flex:1;min-width:0;cursor:pointer}
+.row-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-meta{font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-side{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.amt{font-weight:750;white-space:nowrap}
+.due{font-size:12.5px;font-weight:700}
+.due.telat{color:var(--telat)}.due.dekat{color:var(--dekat-ink)}.due.lunas{color:var(--lunas)}.due.belum{color:var(--ink-2)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.pill.lunas{background:var(--lunas-soft);color:var(--lunas-ink)}
+.pill.dekat{background:var(--dekat-soft);color:var(--dekat-ink)}
+.pill.telat{background:var(--telat-soft);color:var(--telat-ink)}
+.pill.belum{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.pill.kosong{background:transparent;color:var(--ink-3);border:1px dashed var(--line-2)}
+.row-btns{display:flex;gap:6px;align-items:center}
+@media (max-width:520px){
+  .row.tagih{flex-wrap:wrap}
+  .row.tagih .row-side{flex-direction:row;align-items:center;width:100%;justify-content:space-between;padding-left:50px}
+}
+.empty{padding:26px 18px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;color:var(--ink);font-size:15.5px;margin-bottom:4px}
+
+/* ---------- kos ---------- */
+.kos-grid{display:grid;gap:14px}
+@media (min-width:640px){.kos-grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1200px){.kos-grid{grid-template-columns:repeat(3,1fr)}}
+.kos-card{padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:12px}
+.kos-card:hover{border-color:var(--line-2)}
+.kos-card h2{font-size:17px}
+.kos-sub{font-size:13px;color:var(--ink-2);margin-top:2px}
+.kos-foot{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;gap:8px}
+.kos-foot b{color:var(--ink)}
+.add-card{border:1.6px dashed var(--line-2);border-radius:var(--r-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:170px;background:transparent;cursor:pointer;color:var(--teal-2);font-weight:700}
+.add-card:hover{background:var(--surface)}
+.add-card svg{width:26px;height:26px}
+.occ{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2);text-decoration:none;font-weight:600;font-size:14px;margin-bottom:10px}
+.back svg{width:18px;height:18px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:14px}
+.kv>div{padding:12px 14px;border-right:1px solid var(--line)}
+.kv>div:last-child{border-right:0}
+.kv b{display:block;font-size:17px;font-weight:800}
+.kv span{font-size:12.5px;color:var(--ink-2)}
+
+/* ---------- toolbar ---------- */
+.monthsw{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line-2);border-radius:11px;padding:3px}
+.monthsw b{min-width:128px;text-align:center;font-size:14.5px}
+.monthsw button{border:0;background:transparent;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.monthsw button:hover{background:var(--surface-2)}
+.monthsw svg{width:18px;height:18px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:99px;padding:7px 13px;font-size:13.5px;font-weight:650;cursor:pointer;white-space:nowrap;color:var(--ink-2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip small{font-weight:600;opacity:.75;margin-left:3px}
+.select{border:1px solid var(--line-2);background:var(--surface);border-radius:11px;padding:9px 34px 9px 12px;font-size:14px;font-weight:600;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%234F6662' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;min-height:42px}
+.totals{display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:14px}
+.totals>div{padding:12px 14px;border-right:1px solid var(--line)}
+.totals>div:last-child{border-right:0}
+.totals span{font-size:12.5px;color:var(--ink-2);display:block}
+.totals b{font-size:17px;font-weight:800;letter-spacing:-.01em}
+@media (max-width:420px){.totals b,.kv b{font-size:15px}}
+
+/* ---------- kas ---------- */
+.kas-table{width:100%;border-collapse:collapse;font-size:14px}
+.kas-table th{text-align:left;font-size:12.5px;color:var(--ink-2);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line)}
+.kas-table td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.kas-table tr:last-child td{border-bottom:0}
+.kas-table .num{text-align:right;white-space:nowrap}
+.kas-table tfoot td{font-weight:800;border-top:1.5px solid var(--line-2);background:var(--surface-2)}
+.minibar{height:6px;border-radius:99px;background:var(--surface-2);margin-top:6px;overflow:hidden}
+.minibar i{display:block;height:100%;background:var(--teal)}
+.neg{color:var(--telat)}
+@media (max-width:560px){.kas-table .hide-sm{display:none}.kas-table th,.kas-table td{padding:10px 10px}}
+
+/* ---------- form ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label,.flabel{font-size:13.5px;font-weight:700;color:var(--ink)}
+.field .help{font-size:12.5px;color:var(--ink-3)}
+.input,.textarea{border:1px solid var(--line-2);background:var(--surface);border-radius:11px;padding:11px 13px;font-size:15.5px;width:100%;min-height:46px}
+.input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+.textarea{min-height:96px;resize:vertical;line-height:1.45}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.prefix{position:relative}
+.prefix span{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-weight:600;pointer-events:none}
+.prefix .input{padding-left:40px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex:1;min-width:80px}
+.seg input{position:absolute;opacity:0}
+.seg span{display:block;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:10px 8px;font-weight:650;font-size:14px;cursor:pointer;background:var(--surface)}
+.seg input:checked+span{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-2)}
+.seg input:focus-visible+span{outline:2.5px solid var(--teal);outline-offset:2px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.switch:last-of-type{border-bottom:0}
+.switch input{appearance:none;width:46px;height:28px;border-radius:99px;background:#C9D4D1;position:relative;cursor:pointer;flex:none;transition:background .15s}
+.switch input::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.switch input:checked{background:var(--teal)}
+.switch input:checked::after{transform:translateX(18px)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tags code{font-family:inherit;font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--ink-2);cursor:pointer}
+.settings-grid{display:grid;gap:16px}
+@media (min-width:1000px){.settings-grid{grid-template-columns:1fr 1fr;align-items:start}}
+.settings-grid h2{margin-bottom:4px}
+.settings-grid .desc{font-size:13.5px;color:var(--ink-2);margin:0 0 14px}
+.note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--ink-2)}
+.note b{color:var(--ink)}
+
+/* ---------- sheet (dialog) ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:40;background:rgba(14,32,30,0);display:flex;align-items:flex-end;justify-content:center;transition:background .2s}
+.sheet-wrap.open{background:rgba(14,32,30,.42)}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:8px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.2,1)}
+.sheet-wrap.open .sheet{transform:none}
+.sheet::before{content:'';display:block;width:40px;height:4px;border-radius:99px;background:var(--line-2);margin:4px auto 12px}
+@media (min-width:700px){
+  .sheet-wrap{align-items:center;padding:24px}
+  .sheet{border-radius:20px;padding:22px 24px 24px;transform:translateY(16px);opacity:0;transition:transform .2s,opacity .2s}
+  .sheet-wrap.open .sheet{opacity:1}
+  .sheet::before{display:none}
+}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.sh-head h2{font-size:19px}
+.sh-head p{margin:3px 0 0;font-size:13.5px;color:var(--ink-2)}
+.sh-actions{display:flex;gap:8px;margin-top:6px}
+.sh-actions .btn{flex:1}
+.info{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px;margin:0 0 16px}
+.info dt{color:var(--ink-2)}
+.info dd{margin:0;font-weight:650;text-align:right}
+.mini-list{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.mini-list .row{padding:10px 12px}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.quick button{border:1px solid var(--line-2);background:var(--surface-2);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:650;cursor:pointer}
+.callout{border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:16px}
+.callout.telat{background:var(--telat-soft);color:var(--telat-ink)}
+.callout.dekat{background:var(--dekat-soft);color:var(--dekat-ink)}
+.callout.lunas{background:var(--lunas-soft);color:var(--lunas-ink)}
+.callout.belum{background:var(--surface-2);color:var(--ink-2)}
+
+/* ---------- kuitansi ---------- */
+.receipt{border:1.5px solid var(--ink);border-radius:14px;padding:18px;position:relative;background:#fff}
+.receipt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1.5px dashed var(--line-2);padding-bottom:12px;margin-bottom:12px}
+.receipt-top b{font-size:17px}
+.receipt-top small{display:block;color:var(--ink-2);font-size:12.5px}
+.receipt dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;margin:0;font-size:14px}
+.receipt dt{color:var(--ink-2)}
+.receipt dd{margin:0;text-align:right;font-weight:650}
+.receipt-amt{display:flex;justify-content:space-between;align-items:center;border-top:1.5px dashed var(--line-2);margin-top:12px;padding-top:12px}
+.receipt-amt b{font-size:22px;font-weight:800}
+.stamp{display:inline-block;transform:rotate(-8deg);margin-left:auto;margin-right:14px;border:2px solid var(--lunas);color:var(--lunas);font-weight:800;font-size:13px;padding:2px 10px;border-radius:6px;opacity:.85}
+
+/* ---------- toast & login ---------- */
+.toast{pointer-events:none;position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-20px);background:var(--ink);color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:70;opacity:0;transition:.2s;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--telat)}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login .panel{width:100%;max-width:380px;padding:28px 24px}
+.login h1{font-size:24px;margin:16px 0 4px}
+.pin{letter-spacing:.5em;text-align:center;font-size:22px;font-weight:800}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  body *{visibility:hidden}
+  .receipt,.receipt *{visibility:visible}
+  .receipt{position:fixed;left:0;top:0;width:100%;max-width:420px}
+}
+</style>
+</head>
+<body>
+<div class="busy" id="busy"></div>
+<div id="root"></div>
+
+<script>
+/* ================================================================
+   PENGATURAN — tempel URL Web App Apps Script (yang berakhiran /exec).
+   Kalau dikosongkan, aplikasi berjalan dalam MODE CONTOH dengan data
+   contoh 6 kos yang tersimpan di browser ini saja.
+   ================================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbx6SPCYglIcVWfbeMaZ5C-h9QDuv-WTWgWPfxCDcvlaiD5cBGp4Z9M2FyoJGLjX9GTEAA/exec';
+</script>
+
+<script>
+/* ================================================================
+   KosCore — logika bersama (dipakai Code.gs dan index.html mode contoh)
+   Semua tanggal disimpan sebagai teks 'yyyy-mm-dd', periode 'yyyy-mm'.
+   ================================================================ */
+var KosCore = (function () {
+  var TABEL = {
+    Kos: ['id', 'nama', 'alamat', 'catatan', 'dibuat'],
+    Kamar: ['id', 'kosId', 'nomor', 'harga', 'fasilitas', 'dibuat'],
+    Penyewa: ['id', 'kamarId', 'kosId', 'nama', 'wa', 'tglMasuk', 'hariTempo', 'harga', 'deposit', 'status', 'tglKeluar', 'catatan', 'dibuat'],
+    Tagihan: ['id', 'penyewaId', 'kamarId', 'kosId', 'periode', 'nominal', 'jatuhTempo', 'catatan', 'dibuat'],
+    Pembayaran: ['id', 'tagihanId', 'penyewaId', 'kosId', 'tanggal', 'nominal', 'metode', 'catatan', 'dibuat'],
+    Pengeluaran: ['id', 'kosId', 'tanggal', 'kategori', 'nominal', 'keterangan', 'dibuat'],
+    LogPengingat: ['tanggal', 'tagihanId', 'tujuan', 'jenis', 'status', 'pesan']
+  };
+  var ANGKA = ['harga', 'hariTempo', 'deposit', 'nominal'];
+
+  var DEFAULT_SETTINGS = {
+    namaUsaha: 'Kos Saya',
+    pin: '1234',
+    fonnteToken: '',
+    waPemilik: '',
+    kirimPenyewa: 'ya',
+    kirimPemilik: 'ya',
+    hariSebelum: '3',
+    ulangTelat: '3',
+    templatePengingat:
+      'Halo {nama}, ini pengingat sewa {kos} kamar {kamar} untuk {periode} sebesar {sisa}, jatuh tempo {jatuh_tempo}. Terima kasih.',
+    templateTelat:
+      'Halo {nama}, sewa {kos} kamar {kamar} untuk {periode} sudah lewat {telat} hari dari jatuh tempo ({jatuh_tempo}). Sisa yang belum dibayar {sisa}. Mohon segera diselesaikan ya. Terima kasih.',
+    templateKuitansi:
+      'Terima kasih {nama}. Pembayaran sewa {kos} kamar {kamar} untuk {periode} sebesar {dibayar} sudah kami terima pada {tanggal_bayar}. {status_lunas}'
+  };
+
+  var BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  var BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  var HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  /* ---------- tanggal ---------- */
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(s) { var p = String(s).slice(0, 10).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function lastDay(y, m) { return new Date(y, m, 0).getDate(); } // m: 1-12
+  function periodeOf(tgl) { return String(tgl).slice(0, 7); }
+  function addMonths(periode, n) {
+    var y = +periode.slice(0, 4), m = +periode.slice(5, 7) - 1 + n;
+    y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+    return y + '-' + pad(m + 1);
+  }
+  function addDays(tgl, n) { var d = parse(tgl); d.setDate(d.getDate() + n); return ymd(d); }
+  function dueDate(periode, hari) {
+    var y = +periode.slice(0, 4), m = +periode.slice(5, 7);
+    return y + '-' + pad(m) + '-' + pad(Math.min(Math.max(1, hari), lastDay(y, m)));
+  }
+  /** selisih hari a - b */
+  function diffDays(a, b) { return Math.round((parse(a) - parse(b)) / 86400000); }
+  function fmtTgl(tgl) { if (!tgl) return '-'; var d = parse(tgl); return d.getDate() + ' ' + BLN[d.getMonth()] + ' ' + d.getFullYear(); }
+  function fmtTglPendek(tgl) { var d = parse(tgl); return d.getDate() + ' ' + BLN[d.getMonth()]; }
+  function fmtPeriode(p) { return BULAN[+p.slice(5, 7) - 1] + ' ' + p.slice(0, 4); }
+  function fmtHari(tgl) { var d = parse(tgl); return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
+
+  /* ---------- angka & teks ---------- */
+  function rupiah(n) {
+    n = Math.round(Number(n) || 0);
+    var neg = n < 0; n = Math.abs(n);
+    var s = String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return (neg ? '-Rp ' : 'Rp ') + s;
+  }
+  function rupiahSingkat(n) {
+    n = Number(n) || 0;
+    if (Math.abs(n) >= 1e6) return 'Rp ' + (n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1).replace('.', ',') + ' jt';
+    if (Math.abs(n) >= 1e3) return 'Rp ' + Math.round(n / 1e3) + ' rb';
+    return rupiah(n);
+  }
+  function normalWa(no) {
+    var s = String(no || '').replace(/[^0-9]/g, '');
+    if (!s) return '';
+    if (s.indexOf('0') === 0) s = '62' + s.slice(1);
+    else if (s.indexOf('8') === 0) s = '62' + s;
+    return s;
+  }
+  function newId(prefix) {
+    return prefix + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+  }
+  function isiTemplate(tpl, v) {
+    return String(tpl || '').replace(/\{(\w+)\}/g, function (m, k) { return v[k] !== undefined ? v[k] : m; });
+  }
+  function bersihkan(nama, obj) {
+    var out = {};
+    TABEL[nama].forEach(function (k) {
+      var v = obj[k];
+      if (ANGKA.indexOf(k) >= 0) v = (v === '' || v === null || v === undefined) ? 0 : Number(v);
+      else v = (v === null || v === undefined) ? '' : String(v).trim();
+      out[k] = v;
+    });
+    return out;
+  }
+  function wajib(v, label) { if (v === undefined || v === null || String(v).trim() === '') throw new Error(label + ' wajib diisi'); }
+
+  /* ---------- tagihan otomatis ---------- */
+  var JARAK_BUAT = 10; // tagihan dibuat paling lambat 10 hari sebelum jatuh tempo
+
+  function rencanaTagihan(penyewa, tagihanAda, today, hariSebelum) {
+    var jarak = Math.max(JARAK_BUAT, Number(hariSebelum) || 0);
+    var batas = addDays(today, jarak);
+    var ada = {};
+    tagihanAda.forEach(function (t) { ada[t.penyewaId + '|' + t.periode] = 1; });
+    var baru = [];
+    penyewa.forEach(function (p) {
+      if (p.status !== 'aktif' || !p.tglMasuk) return;
+      var hari = Number(p.hariTempo) || parse(p.tglMasuk).getDate();
+      var awal = periodeOf(p.tglMasuk);
+      for (var i = 0; i < 600; i++) {
+        var per = addMonths(awal, i);
+        var due = dueDate(per, hari);
+        if (i === 0 && due < p.tglMasuk) due = p.tglMasuk;
+        if (due > batas) break;
+        if (ada[p.id + '|' + per]) continue;
+        baru.push({
+          id: newId('T'), penyewaId: p.id, kamarId: p.kamarId, kosId: p.kosId,
+          periode: per, nominal: Number(p.harga) || 0, jatuhTempo: due, catatan: '', dibuat: today
+        });
+        ada[p.id + '|' + per] = 1;
+      }
+    });
+    return baru;
+  }
+
+  function pastikanTagihan(db, today) {
+    var s = db.getSettings();
+    var baru = rencanaTagihan(db.all('Penyewa'), db.all('Tagihan'), today, s.hariSebelum);
+    if (baru.length) db.insertMany('Tagihan', baru);
+    return baru.length;
+  }
+
+  /* ---------- status tagihan (dihitung, tidak disimpan) ---------- */
+  function hitung(data, today, hariSebelum) {
+    var hs = Number(hariSebelum) || 3;
+    var bayar = {};
+    data.pembayaran.forEach(function (b) { bayar[b.tagihanId] = (bayar[b.tagihanId] || 0) + Number(b.nominal); });
+    var kos = {}, kamar = {}, penyewa = {};
+    data.kos.forEach(function (k) { kos[k.id] = k; });
+    data.kamar.forEach(function (k) { kamar[k.id] = k; });
+    data.penyewa.forEach(function (p) { penyewa[p.id] = p; });
+    var tagihan = data.tagihan.map(function (t) {
+      var dibayar = bayar[t.id] || 0;
+      var sisa = Math.max(0, Number(t.nominal) - dibayar);
+      var hari = diffDays(t.jatuhTempo, today);
+      var status;
+      if (sisa <= 0) status = 'lunas';
+      else if (hari < 0) status = 'telat';
+      else if (hari <= hs) status = 'dekat';
+      else status = 'belum';
+      var o = {};
+      for (var k in t) o[k] = t[k];
+      o.dibayar = dibayar; o.sisa = sisa; o.hari = hari; o.status = status;
+      o.sebagian = dibayar > 0 && sisa > 0;
+      o.penyewa = penyewa[t.penyewaId] || null;
+      o.kamar = kamar[t.kamarId] || null;
+      o.kos = kos[t.kosId] || null;
+      return o;
+    });
+    return tagihan;
+  }
+
+  /** status ringkas per kamar untuk denah */
+  function statusKamar(data, tagihan) {
+    var aktif = {};
+    data.penyewa.forEach(function (p) { if (p.status === 'aktif') aktif[p.kamarId] = p; });
+    // kamar menampilkan tagihan terburuk yang belum lunas; kalau semua lunas, tagihan terakhir
+    var urut = { telat: 4, dekat: 3, belum: 2, lunas: 1 };
+    var terburuk = {};
+    tagihan.forEach(function (t) {
+      var p = aktif[t.kamarId];
+      if (!p || p.id !== t.penyewaId) return;
+      var cur = terburuk[t.kamarId];
+      if (!cur || urut[t.status] > urut[cur.status]) { terburuk[t.kamarId] = t; return; }
+      if (urut[t.status] === urut[cur.status]) {
+        // sesama belum lunas: yang paling lama; sesama lunas: yang paling baru
+        if (t.status === 'lunas' ? t.jatuhTempo > cur.jatuhTempo : t.jatuhTempo < cur.jatuhTempo) terburuk[t.kamarId] = t;
+      }
+    });
+    var out = {};
+    data.kamar.forEach(function (k) {
+      var p = aktif[k.id];
+      if (!p) { out[k.id] = { status: 'kosong', penyewa: null, tagihan: null }; return; }
+      var t = terburuk[k.id];
+      out[k.id] = { status: t ? t.status : 'belum', penyewa: p, tagihan: t || null };
+    });
+    return out;
+  }
+
+  /* ---------- variabel pesan ---------- */
+  function varPesan(t, today) {
+    return {
+      nama: t.penyewa ? t.penyewa.nama : '',
+      kos: t.kos ? t.kos.nama : '',
+      kamar: t.kamar ? t.kamar.nomor : '',
+      periode: fmtPeriode(t.periode),
+      nominal: rupiah(t.nominal),
+      sisa: rupiah(t.sisa),
+      dibayar: rupiah(t.dibayar),
+      jatuh_tempo: fmtTgl(t.jatuhTempo),
+      telat: String(Math.max(0, -diffDays(t.jatuhTempo, today)))
+    };
+  }
+  function pesanUntuk(t, s, today) {
+    var tpl = t.status === 'telat' ? s.templateTelat : s.templatePengingat;
+    return isiTemplate(tpl, varPesan(t, today));
+  }
+
+  /** daftar pesan otomatis yang harus dikirim hari ini */
+  function rencanaPengingat(tagihan, s, today, sudahTerkirim) {
+    var hs = Number(s.hariSebelum) || 3;
+    var ulang = Math.max(1, Number(s.ulangTelat) || 3);
+    sudahTerkirim = sudahTerkirim || {};
+    var keP = [], ringkas = { telat: [], hariIni: [], dekat: [] };
+    tagihan.forEach(function (t) {
+      if (t.sisa <= 0 || !t.penyewa || t.penyewa.status !== 'aktif') return;
+      var h = t.hari, jenis = null;
+      if (h === hs && hs > 0) jenis = 'sebelum';
+      else if (h === 0) jenis = 'hari_ini';
+      else if (h < 0 && -h <= 90 && (-h) % ulang === 0) jenis = 'telat';
+      if (h < 0) ringkas.telat.push(t);
+      else if (h === 0) ringkas.hariIni.push(t);
+      else if (h <= hs) ringkas.dekat.push(t);
+      if (jenis && s.kirimPenyewa === 'ya' && normalWa(t.penyewa.wa) && !sudahTerkirim[t.id + '|' + jenis]) {
+        keP.push({ tagihanId: t.id, jenis: jenis, tujuan: normalWa(t.penyewa.wa), pesan: pesanUntuk(t, s, today) });
+      }
+    });
+    var pemilik = null;
+    if (s.kirimPemilik === 'ya' && normalWa(s.waPemilik) && (ringkas.telat.length + ringkas.hariIni.length + ringkas.dekat.length)) {
+      var baris = function (t) { return '- ' + t.kos.nama + ' kamar ' + t.kamar.nomor + ', ' + t.penyewa.nama + ': ' + rupiah(t.sisa) + ' (' + fmtTglPendek(t.jatuhTempo) + ')'; };
+      var bag = ['Ringkasan tagihan ' + s.namaUsaha + ', ' + fmtHari(today)];
+      if (ringkas.telat.length) bag.push('\nTelat bayar (' + ringkas.telat.length + '):\n' + ringkas.telat.map(baris).join('\n'));
+      if (ringkas.hariIni.length) bag.push('\nJatuh tempo hari ini (' + ringkas.hariIni.length + '):\n' + ringkas.hariIni.map(baris).join('\n'));
+      if (ringkas.dekat.length) bag.push('\nJatuh tempo ' + hs + ' hari ke depan (' + ringkas.dekat.length + '):\n' + ringkas.dekat.map(baris).join('\n'));
+      pemilik = { tujuan: normalWa(s.waPemilik), pesan: bag.join('\n') };
+    }
+    return { penyewa: keP, pemilik: pemilik };
+  }
+
+  /* ---------- operasi (API) ---------- */
+  function publicSettings(s) {
+    var o = {};
+    for (var k in s) if (k !== 'pin' && k !== 'fonnteToken') o[k] = s[k];
+    o.adaToken = !!s.fonnteToken;
+    o.tokenTersamar = s.fonnteToken ? String(s.fonnteToken).slice(0, 3) + '••••' + String(s.fonnteToken).slice(-3) : '';
+    return o;
+  }
+
+  function cari(db, nama, id) {
+    var r = db.all(nama).filter(function (x) { return x.id === id; })[0];
+    if (!r) throw new Error('Data tidak ditemukan');
+    return r;
+  }
+
+  var ops = {
+    getAll: function (db, d, today) {
+      pastikanTagihan(db, today);
+      return {
+        kos: db.all('Kos'), kamar: db.all('Kamar'), penyewa: db.all('Penyewa'),
+        tagihan: db.all('Tagihan'), pembayaran: db.all('Pembayaran'), pengeluaran: db.all('Pengeluaran'),
+        settings: publicSettings(db.getSettings()), today: today
+      };
+    },
+
+    saveKos: function (db, d, today) {
+      wajib(d.nama, 'Nama kos');
+      var namaSama = db.all('Kos').filter(function (k) { return k.nama.toLowerCase() === String(d.nama).trim().toLowerCase() && k.id !== d.id; });
+      if (namaSama.length) throw new Error('Sudah ada kos bernama "' + d.nama + '"');
+      if (d.id) {
+        cari(db, 'Kos', d.id);
+        db.update('Kos', d.id, { nama: String(d.nama).trim(), alamat: d.alamat || '', catatan: d.catatan || '' });
+        return { id: d.id };
+      }
+      var kos = bersihkan('Kos', { id: newId('K'), nama: d.nama, alamat: d.alamat, catatan: d.catatan, dibuat: today });
+      db.insert('Kos', kos);
+      var n = Math.min(200, Math.max(0, Number(d.jumlahKamar) || 0));
+      var awalan = d.awalan || '';
+      var lebar = Math.max(2, String(n).length);
+      var rows = [];
+      for (var i = 1; i <= n; i++) {
+        var no = String(i); while (no.length < lebar) no = '0' + no;
+        rows.push(bersihkan('Kamar', { id: newId('R'), kosId: kos.id, nomor: awalan + no, harga: d.hargaDefault || 0, fasilitas: d.fasilitas || '', dibuat: today }));
+      }
+      if (rows.length) db.insertMany('Kamar', rows);
+      return { id: kos.id };
+    },
+
+    hapusKos: function (db, d) {
+      cari(db, 'Kos', d.id);
+      var aktif = db.all('Penyewa').filter(function (p) { return p.kosId === d.id && p.status === 'aktif'; });
+      if (aktif.length) throw new Error('Masih ada ' + aktif.length + ' penyewa aktif. Keluarkan dulu penyewanya.');
+      ['Pembayaran', 'Tagihan', 'Penyewa', 'Kamar', 'Pengeluaran'].forEach(function (t) {
+        var ids = db.all(t).filter(function (x) { return x.kosId === d.id; }).map(function (x) { return x.id; });
+        db.removeMany(t, ids);
+      });
+      db.remove('Kos', d.id);
+      return { id: d.id };
+    },
+
+    saveKamar: function (db, d, today) {
+      wajib(d.nomor, 'Nomor kamar');
+      var kamarId = d.id;
+      var kosId = d.id ? cari(db, 'Kamar', d.id).kosId : d.kosId;
+      cari(db, 'Kos', kosId);
+      var dobel = db.all('Kamar').filter(function (k) { return k.kosId === kosId && k.nomor.toLowerCase() === String(d.nomor).trim().toLowerCase() && k.id !== d.id; });
+      if (dobel.length) throw new Error('Nomor kamar ' + d.nomor + ' sudah ada di kos ini');
+      if (d.id) {
+        db.update('Kamar', d.id, { nomor: String(d.nomor).trim(), harga: Number(d.harga) || 0, fasilitas: d.fasilitas || '' });
+      } else {
+        kamarId = newId('R');
+        db.insert('Kamar', bersihkan('Kamar', { id: kamarId, kosId: kosId, nomor: d.nomor, harga: d.harga, fasilitas: d.fasilitas, dibuat: today }));
+      }
+      return { id: kamarId };
+    },
+
+    hapusKamar: function (db, d) {
+      cari(db, 'Kamar', d.id);
+      var ada = db.all('Penyewa').filter(function (p) { return p.kamarId === d.id; });
+      if (ada.some(function (p) { return p.status === 'aktif'; })) throw new Error('Kamar masih ditempati. Keluarkan penyewanya dulu.');
+      if (ada.length) throw new Error('Kamar ini punya riwayat penyewa, jadi tidak bisa dihapus supaya laporan tetap utuh.');
+      db.remove('Kamar', d.id);
+      return { id: d.id };
+    },
+
+    savePenyewa: function (db, d, today) {
+      wajib(d.nama, 'Nama penyewa');
+      if (d.id) {
+        var lama = cari(db, 'Penyewa', d.id);
+        var patch = {
+          nama: String(d.nama).trim(), wa: d.wa || '', catatan: d.catatan || '',
+          hariTempo: Number(d.hariTempo) || lama.hariTempo, harga: Number(d.harga) || 0, deposit: Number(d.deposit) || 0
+        };
+        db.update('Penyewa', d.id, patch);
+        // tagihan yang belum dibayar & belum lewat ikut menyesuaikan
+        var dibayar = {};
+        db.all('Pembayaran').forEach(function (b) { dibayar[b.tagihanId] = 1; });
+        db.all('Tagihan').forEach(function (t) {
+          if (t.penyewaId !== d.id || dibayar[t.id] || t.jatuhTempo < today) return;
+          var p2 = { nominal: patch.harga };
+          var due = dueDate(t.periode, patch.hariTempo);
+          if (due >= lama.tglMasuk) p2.jatuhTempo = due;
+          db.update('Tagihan', t.id, p2);
+        });
+        pastikanTagihan(db, today);
+        return { id: d.id };
+      }
+      wajib(d.kamarId, 'Kamar');
+      wajib(d.tglMasuk, 'Tanggal masuk');
+      var kamar = cari(db, 'Kamar', d.kamarId);
+      var terisi = db.all('Penyewa').filter(function (p) { return p.kamarId === d.kamarId && p.status === 'aktif'; });
+      if (terisi.length) throw new Error('Kamar ' + kamar.nomor + ' sudah ditempati ' + terisi[0].nama);
+      var p = bersihkan('Penyewa', {
+        id: newId('P'), kamarId: kamar.id, kosId: kamar.kosId, nama: d.nama, wa: d.wa,
+        tglMasuk: d.tglMasuk, hariTempo: Number(d.hariTempo) || parse(d.tglMasuk).getDate(),
+        harga: d.harga !== undefined && d.harga !== '' ? d.harga : kamar.harga, deposit: d.deposit,
+        status: 'aktif', tglKeluar: '', catatan: d.catatan, dibuat: today
+      });
+      db.insert('Penyewa', p);
+      pastikanTagihan(db, today);
+      return { id: p.id };
+    },
+
+    keluarPenyewa: function (db, d, today) {
+      var p = cari(db, 'Penyewa', d.id);
+      var tgl = d.tglKeluar || today;
+      db.update('Penyewa', p.id, { status: 'keluar', tglKeluar: tgl });
+      var dibayar = {};
+      db.all('Pembayaran').forEach(function (b) { dibayar[b.tagihanId] = 1; });
+      var hapus = db.all('Tagihan').filter(function (t) { return t.penyewaId === p.id && !dibayar[t.id] && t.jatuhTempo > tgl; }).map(function (t) { return t.id; });
+      db.removeMany('Tagihan', hapus);
+      return { id: p.id, tagihanDihapus: hapus.length };
+    },
+
+    bayar: function (db, d, today) {
+      var t = cari(db, 'Tagihan', d.tagihanId);
+      var n = Number(d.nominal);
+      if (!(n > 0)) throw new Error('Nominal pembayaran harus lebih dari 0');
+      var b = bersihkan('Pembayaran', {
+        id: newId('B'), tagihanId: t.id, penyewaId: t.penyewaId, kosId: t.kosId,
+        tanggal: d.tanggal || today, nominal: n, metode: d.metode || 'Tunai', catatan: d.catatan, dibuat: today
+      });
+      db.insert('Pembayaran', b);
+      return b;
+    },
+
+    hapusBayar: function (db, d) { cari(db, 'Pembayaran', d.id); db.remove('Pembayaran', d.id); return { id: d.id }; },
+
+    ubahTagihan: function (db, d) {
+      var t = cari(db, 'Tagihan', d.id);
+      var patch = { catatan: d.catatan || '' };
+      if (d.nominal !== undefined) patch.nominal = Math.max(0, Number(d.nominal) || 0);
+      if (d.jatuhTempo) patch.jatuhTempo = d.jatuhTempo;
+      db.update('Tagihan', t.id, patch);
+      return { id: t.id };
+    },
+
+    savePengeluaran: function (db, d, today) {
+      wajib(d.kosId, 'Kos'); wajib(d.kategori, 'Kategori');
+      if (!(Number(d.nominal) > 0)) throw new Error('Nominal harus lebih dari 0');
+      if (d.id) {
+        db.update('Pengeluaran', d.id, { kosId: d.kosId, tanggal: d.tanggal || today, kategori: d.kategori, nominal: Number(d.nominal), keterangan: d.keterangan || '' });
+        return { id: d.id };
+      }
+      var e = bersihkan('Pengeluaran', { id: newId('E'), kosId: d.kosId, tanggal: d.tanggal || today, kategori: d.kategori, nominal: d.nominal, keterangan: d.keterangan, dibuat: today });
+      db.insert('Pengeluaran', e);
+      return { id: e.id };
+    },
+
+    hapusPengeluaran: function (db, d) { cari(db, 'Pengeluaran', d.id); db.remove('Pengeluaran', d.id); return { id: d.id }; },
+
+    saveSettings: function (db, d) {
+      var izin = ['namaUsaha', 'waPemilik', 'kirimPenyewa', 'kirimPemilik', 'hariSebelum', 'ulangTelat', 'templatePengingat', 'templateTelat', 'templateKuitansi'];
+      var patch = {};
+      izin.forEach(function (k) { if (d[k] !== undefined) patch[k] = String(d[k]); });
+      if (d.pinBaru) {
+        if (!/^\d{4,8}$/.test(String(d.pinBaru))) throw new Error('PIN harus 4 sampai 8 angka');
+        patch.pin = String(d.pinBaru);
+      }
+      if (d.fonnteToken) patch.fonnteToken = String(d.fonnteToken).trim();
+      if (d.hapusToken) patch.fonnteToken = '';
+      db.setSettings(patch);
+      return publicSettings(db.getSettings());
+    }
+  };
+
+  function jalankan(db, action, data, today) {
+    if (!ops[action]) throw new Error('Aksi tidak dikenal: ' + action);
+    return ops[action](db, data || {}, today);
+  }
+
+  return {
+    TABEL: TABEL, ANGKA: ANGKA, DEFAULT_SETTINGS: DEFAULT_SETTINGS, BULAN: BULAN, BLN: BLN,
+    pad: pad, ymd: ymd, parse: parse, addMonths: addMonths, addDays: addDays, dueDate: dueDate, diffDays: diffDays,
+    periodeOf: periodeOf, fmtTgl: fmtTgl, fmtTglPendek: fmtTglPendek, fmtPeriode: fmtPeriode, fmtHari: fmtHari,
+    rupiah: rupiah, rupiahSingkat: rupiahSingkat, normalWa: normalWa, newId: newId, isiTemplate: isiTemplate,
+    rencanaTagihan: rencanaTagihan, pastikanTagihan: pastikanTagihan, hitung: hitung, statusKamar: statusKamar,
+    varPesan: varPesan, pesanUntuk: pesanUntuk, rencanaPengingat: rencanaPengingat,
+    publicSettings: publicSettings, jalankan: jalankan, bersihkan: bersihkan
+  };
+})();
+
+</script>
+
+<script>
+const C = KosCore;
+const DEMO = !API_URL;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const angka = v => Number(String(v ?? '').replace(/[^0-9]/g, '')) || 0;
+const fmtAngka = n => n ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { } }
+};
+
+/* ---------- ikon ---------- */
+const I = (d, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}${extra}</svg>`;
+const IC = {
+  home: I('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
+  kos: I('<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4"/>'),
+  tagihan: I('<path d="M6 2.5h12v19l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h3.5"/>'),
+  kas: I('<path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0 0 4h15v4M3 6v12a2 2 0 0 0 2 2h15v-4"/><path d="M15 12h6v4h-6a2 2 0 0 1 0-4z"/>'),
+  atur: I('<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
+  plus: I('<path d="M12 5v14M5 12h14"/>'),
+  left: I('<path d="m15 18-6-6 6-6"/>'),
+  right: I('<path d="m9 18 6-6-6-6"/>'),
+  x: I('<path d="M18 6 6 18M6 6l12 12"/>'),
+  edit: I('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>'),
+  trash: I('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+  print: I('<path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/>'),
+  wa: I('<path d="M20 11.6a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.6z"/><path d="M9 9.5c0 2.5 2 4.6 4.6 4.6l1-1.1 1.6.8-.4 1.3"/>'),
+  keluar: I('<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/>'),
+  user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  send: I('<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>')
+};
+
+/* ---------- state ---------- */
+const S = { data: null, tg: [], ks: {}, today: null, bulan: null, kasBulan: null, fStatus: 'belumlunas', fKos: '', pin: store.get('kosPin') || '' };
+
+/* ---------- API ---------- */
+async function api(action, data) {
+  if (DEMO) return demoApi(action, data);
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, data, pin: S.pin }) });
+  const j = await res.json();
+  if (!j.ok) {
+    if (j.kode === 'PIN') { store.del('kosPin'); S.pin = ''; }
+    throw new Error(j.error || 'Terjadi kesalahan');
+  }
+  return j.data;
+}
+
+function setData(d) {
+  S.data = d; S.today = d.today;
+  S.tg = C.hitung(d, d.today, d.settings.hariSebelum);
+  S.ks = C.statusKamar(d, S.tg);
+  if (!S.bulan) S.bulan = C.periodeOf(d.today);
+  if (!S.kasBulan) S.kasBulan = C.periodeOf(d.today);
+  document.title = (d.settings.namaUsaha || 'Pembukuan Kos');
+  render();
+}
+
+let busyN = 0;
+function busy(on) { busyN += on ? 1 : -1; $('#busy').classList.toggle('on', busyN > 0); }
+
+async function muat() {
+  busy(true);
+  try { setData(await api('getAll')); }
+  catch (e) { if (!S.pin && !DEMO) tampilLogin(e.message); else toast(e.message, true); }
+  finally { busy(false); }
+}
+
+async function aksi(action, data, pesanOk) {
+  busy(true);
+  document.querySelectorAll('.sheet [type=submit], .sheet .btn').forEach(b => b.disabled = true);
+  try {
+    const r = await api(action, data);
+    setData(r.semua);
+    if (pesanOk) toast(pesanOk);
+    return r.hasil;
+  } catch (e) {
+    toast(e.message, true);
+    document.querySelectorAll('.sheet [type=submit], .sheet .btn').forEach(b => b.disabled = false);
+    throw e;
+  } finally { busy(false); }
+}
+
+/* ---------- mode contoh ---------- */
+const DEMO_KEY = 'kosDemo_v1';
+function MemDB(st) {
+  return {
+    all: n => (st[n] || []).map(r => ({ ...r })),
+    insert(n, o) { (st[n] = st[n] || []).push({ ...o }); },
+    insertMany(n, l) { l.forEach(o => this.insert(n, o)); },
+    update(n, id, p) { const r = (st[n] || []).find(x => x.id === id); if (!r) throw new Error('Data tidak ditemukan'); Object.assign(r, p); },
+    remove(n, id) { this.removeMany(n, [id]); },
+    removeMany(n, ids) { const s = new Set(ids); st[n] = (st[n] || []).filter(x => !s.has(x.id)); },
+    getSettings: () => Object.assign({}, C.DEFAULT_SETTINGS, st.settings),
+    setSettings: p => Object.assign(st.settings, p)
+  };
+}
+let demoStore = null;
+function demoToday() { return C.ymd(new Date()); }
+function demoLoad() {
+  if (demoStore) return demoStore;
+  try { demoStore = JSON.parse(store.get(DEMO_KEY)); } catch (e) { demoStore = null; }
+  if (!demoStore || !demoStore.Kos) demoStore = seedDemo(demoToday());
+  return demoStore;
+}
+function demoSave() { store.set(DEMO_KEY, JSON.stringify(demoStore)); }
+async function demoApi(action, data) {
+  if (action === 'tesWa' || action === 'kirimSekarang') throw new Error('Pesan WhatsApp otomatis aktif setelah aplikasi terhubung ke Google Sheets.');
+  const st = demoLoad(), db = MemDB(st), today = demoToday();
+  const hasil = C.jalankan(db, action, data, today);
+  const semua = C.jalankan(db, 'getAll', {}, today);
+  demoSave();
+  return action === 'getAll' ? semua : { hasil, semua };
+}
+
+function seedDemo(today) {
+  const st = { settings: { namaUsaha: 'Kos Keluarga Aditya', waPemilik: '081200001234' } };
+  const db = MemDB(st);
+  let seed = 20261001;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const pick = n => Math.floor(rnd() * n);
+  const kosList = [
+    { nama: 'Kos Mekarsari', alamat: 'Jl. Mekarsari, Cakranegara', n: 8, harga: 750000, kosong: [6] },
+    { nama: 'Kos Melati Putri', alamat: 'Jl. Melati, Ampenan', n: 6, harga: 650000, kosong: [] },
+    { nama: 'Kos Cempaka', alamat: 'Jl. Cempaka, Mataram', n: 10, harga: 800000, kosong: [3, 8] },
+    { nama: 'Kos Kenanga', alamat: 'Jl. Kenanga Raya, Sekarbela', n: 5, harga: 600000, kosong: [4] },
+    { nama: 'Kos Anggrek Residence', alamat: 'Jl. Anggrek, Selaparang', n: 12, harga: 1200000, kosong: [2, 10] },
+    { nama: 'Kos Flamboyan', alamat: 'Jl. Flamboyan, Pagesangan', n: 7, harga: 700000, kosong: [5] }
+  ];
+  const nama = ['Baiq Nurul Hidayah', 'Lalu Ahmad Fauzi', 'Dewi Anggraini', 'Fajar Pratama', 'Siti Rahmawati', 'Made Wirawan', 'Putu Ayu Lestari', 'Agus Salim', 'Nanda Putri', 'Rizky Maulana', 'Hendra Gunawan', 'Yuni Kartika', 'Ilham Hakim', 'Wulan Sari', 'Bayu Saputra', 'Sri Wahyuni', 'Andi Firmansyah', 'Dinda Aulia', 'Gilang Ramadhan', 'Ayu Lestari', 'Taufik Hidayat', 'Mega Puspita', 'Rudi Hartono', 'Lalu Muhammad Zaini', 'Baiq Rahmi', 'Eka Saputri', 'Yoga Pratama', 'Nur Aini', 'Arif Budiman', 'Fitri Handayani', 'Doni Setiawan', 'Indah Permata', 'Kevin Ardiansyah', 'Lia Amelia', 'Rahmat Hidayat', 'Sinta Dewi', 'Teguh Santoso', 'Vina Oktaviani', 'Zainal Abidin', 'Hana Safitri', 'Bagus Prakoso'];
+  let ni = 0;
+  const per = C.periodeOf(today);
+  const ids = [];
+  kosList.forEach((k, ki) => {
+    const { id } = C.jalankan(db, 'saveKos', { nama: k.nama, alamat: k.alamat, jumlahKamar: k.n, hargaDefault: k.harga }, today);
+    db.all('Kamar').filter(x => x.kosId === id).forEach((km, i) => {
+      if (k.kosong.includes(i)) return;
+      let nm, masuk;
+      if (ki === 0 && i === 1) { // kamar 02 Kos Mekarsari: jatuh tempo 2 hari lagi
+        nm = 'Rina Lestari';
+        masuk = C.dueDate(C.addMonths(per, -7), C.parse(C.addDays(today, 2)).getDate());
+      } else {
+        nm = nama[ni++ % nama.length];
+        masuk = C.dueDate(C.addMonths(per, -(2 + pick(16))), 1 + pick(28));
+      }
+      const wa = '08' + (1100000000 + pick(899999999));
+      const r = C.jalankan(db, 'savePenyewa', { kamarId: km.id, nama: nm, wa, tglMasuk: masuk, deposit: rnd() < .5 ? k.harga : 0 }, today);
+      ids.push(r.id);
+    });
+  });
+  // pola pembayaran
+  const telat = new Set([ids[4], ids[11], ids[19], ids[27], ids[33]]);
+  const telat2 = ids[19];  // nunggak 2 bulan
+  const sebagian = ids[27];
+  const byP = {};
+  db.all('Tagihan').forEach(t => (byP[t.penyewaId] = byP[t.penyewaId] || []).push(t));
+  Object.keys(byP).forEach(pid => {
+    const list = byP[pid].sort((a, b) => a.jatuhTempo < b.jatuhTempo ? -1 : 1);
+    const lewat = list.filter(t => t.jatuhTempo < today);
+    list.forEach(t => {
+      const idx = lewat.indexOf(t);
+      const terakhir = idx === lewat.length - 1, keduaTerakhir = idx === lewat.length - 2;
+      if (idx >= 0) {
+        if (telat.has(pid) && (terakhir || (pid === telat2 && keduaTerakhir))) {
+          if (pid === sebagian && terakhir) db.insert('Pembayaran', C.bersihkan('Pembayaran', { id: C.newId('B'), tagihanId: t.id, penyewaId: pid, kosId: t.kosId, tanggal: t.jatuhTempo, nominal: Math.round(t.nominal * .4 / 50000) * 50000, metode: 'Tunai', catatan: 'Sisanya menyusul', dibuat: t.jatuhTempo }));
+          return;
+        }
+        const tgl = C.addDays(t.jatuhTempo, -pick(4));
+        db.insert('Pembayaran', C.bersihkan('Pembayaran', { id: C.newId('B'), tagihanId: t.id, penyewaId: pid, kosId: t.kosId, tanggal: tgl < list[0].jatuhTempo ? list[0].jatuhTempo : tgl, nominal: t.nominal, metode: rnd() < .55 ? 'Transfer' : (rnd() < .5 ? 'Tunai' : 'QRIS'), catatan: '', dibuat: tgl }));
+      } else if (t.jatuhTempo === today ? rnd() < .5 : (rnd() < .25 && C.diffDays(t.jatuhTempo, today) > 3)) {
+        db.insert('Pembayaran', C.bersihkan('Pembayaran', { id: C.newId('B'), tagihanId: t.id, penyewaId: pid, kosId: t.kosId, tanggal: today, nominal: t.nominal, metode: 'Transfer', catatan: 'Bayar lebih awal', dibuat: today }));
+      }
+    });
+  });
+  // pengeluaran 3 bulan terakhir
+  db.all('Kos').forEach((k, ki) => {
+    const n = db.all('Kamar').filter(x => x.kosId === k.id).length;
+    for (let m = -2; m <= 0; m++) {
+      const p = C.addMonths(per, m);
+      const add = (hari, kategori, nominal, ket) => {
+        const tgl = C.dueDate(p, hari);
+        if (tgl > today) return;
+        db.insert('Pengeluaran', C.bersihkan('Pengeluaran', { id: C.newId('E'), kosId: k.id, tanggal: tgl, kategori, nominal, keterangan: ket, dibuat: tgl }));
+      };
+      add(20, 'Listrik', Math.round(n * (52000 + pick(15000)) / 1000) * 1000, 'Token listrik bersama');
+      add(22, 'Air', Math.round(n * (14000 + pick(6000)) / 1000) * 1000, 'Tagihan PDAM');
+      if (ki % 2 === 0) add(5, 'Wifi', 350000, 'Langganan internet');
+      if (rnd() < .3) add(12, 'Perbaikan', 150000 + pick(6) * 50000, ['Ganti keran kamar mandi', 'Perbaikan pintu kamar', 'Servis pompa air', 'Ganti lampu lorong'][pick(4)]);
+    }
+  });
+  return st;
+}
+
+/* ---------- utilitas tampilan ---------- */
+function toast(msg, err) {
+  let t = $('#toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.classList.toggle('err', !!err);
+  requestAnimationFrame(() => t.classList.add('on'));
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), err ? 4200 : 2600);
+}
+const STATUS_LABEL = { lunas: 'Lunas', dekat: 'Segera', telat: 'Telat', belum: 'Belum bayar', kosong: 'Kosong' };
+function teksTempo(t) {
+  if (t.status === 'lunas') return 'Lunas';
+  if (t.hari < 0) return 'Telat ' + (-t.hari) + ' hari';
+  if (t.hari === 0) return 'Jatuh tempo hari ini';
+  if (t.hari === 1) return 'Besok, ' + C.fmtTglPendek(t.jatuhTempo);
+  if (t.status === 'dekat') return t.hari + ' hari lagi, ' + C.fmtTglPendek(t.jatuhTempo);
+  return 'Jatuh tempo ' + C.fmtTglPendek(t.jatuhTempo);
+}
+function waLink(no, pesan) { const n = C.normalWa(no); return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent(pesan) : ''; }
+function waTagihan(t) { return t.penyewa ? waLink(t.penyewa.wa, C.pesanUntuk(t, S.data.settings, S.today)) : ''; }
+const kosById = id => S.data.kos.find(k => k.id === id);
+const kamarById = id => S.data.kamar.find(k => k.id === id);
+const penyewaById = id => S.data.penyewa.find(k => k.id === id);
+const tagihanById = id => S.tg.find(t => t.id === id);
+const urutKamar = (a, b) => a.nomor.localeCompare(b.nomor, 'id', { numeric: true });
+const kamarKos = kosId => S.data.kamar.filter(k => k.kosId === kosId).sort(urutKamar);
+
+function doorHTML(k, cls = '') {
+  const st = S.ks[k.id] || { status: 'kosong' };
+  const lbl = `Kamar ${k.nomor}, ${st.penyewa ? st.penyewa.nama + ', ' + STATUS_LABEL[st.status] : 'kosong'}`;
+  return `<button class="door ${st.status} ${cls}" data-act="kamar" data-id="${k.id}" aria-label="${esc(lbl)}" title="${esc(lbl)}">${esc(k.nomor)}</button>`;
+}
+function boardHTML(kosId, lg) {
+  const ks = kamarKos(kosId);
+  if (!ks.length) return `<p class="muted small" style="margin:0">Belum ada kamar.</p>`;
+  return `<div class="board ${lg ? 'lg' : ''}">${ks.map(k => doorHTML(k)).join('')}</div>`;
+}
+const LEGEND = `<div class="legend"><span><i class="l-lunas"></i>Lunas</span><span><i class="l-belum"></i>Belum jatuh tempo</span><span><i class="l-dekat"></i>Segera jatuh tempo</span><span><i class="l-telat"></i>Telat</span><span><i class="l-kosong"></i>Kosong</span></div>`;
+
+function rowTagihan(t, withBtns = true) {
+  const k = t.kamar || {}, p = t.penyewa || {};
+  const wa = waTagihan(t);
+  const sub = `${esc(t.kos ? t.kos.nama : '')}, ${C.fmtPeriode(t.periode)}${t.sebagian ? ', dibayar ' + C.rupiahSingkat(t.dibayar) : ''}`;
+  return `<div class="row tagih">
+    <button class="door sm ${t.status}" data-act="kamar" data-id="${k.id}" aria-label="Kamar ${esc(k.nomor)}">${esc(k.nomor || '?')}</button>
+    <div class="row-main" data-act="tagihan" data-id="${t.id}" role="button" tabindex="0">
+      <div class="row-title">${esc(p.nama || 'Penyewa')}</div>
+      <div class="row-meta">${sub}</div>
+      <div class="due ${t.status}">${teksTempo(t)}</div>
+    </div>
+    <div class="row-side">
+      <div class="amt">${C.rupiah(t.status === 'lunas' ? t.nominal : t.sisa)}</div>
+      ${withBtns && t.status !== 'lunas' ? `<div class="row-btns">
+        ${wa ? `<a class="icon-btn wa" href="${wa}" target="_blank" rel="noopener" aria-label="Kirim pengingat WhatsApp ke ${esc(p.nama)}" title="Kirim pengingat WhatsApp">${IC.wa}</a>` : ''}
+        <button class="btn sm" data-act="bayar" data-id="${t.id}">Catat bayar</button></div>` : ''}
+    </div>
+  </div>`;
+}
+function monthSw(target, per) {
+  return `<div class="monthsw"><button data-act="geser" data-t="${target}" data-d="-1" aria-label="Bulan sebelumnya">${IC.left}</button><b>${C.fmtPeriode(per)}</b><button data-act="geser" data-t="${target}" data-d="1" aria-label="Bulan berikutnya">${IC.right}</button></div>`;
+}
+
+/* ---------- shell ---------- */
+const NAV = [['beranda', 'Beranda', IC.home], ['kos', 'Kos', IC.kos], ['tagihan', 'Tagihan', IC.tagihan], ['kas', 'Kas', IC.kas], ['atur', 'Pengaturan', IC.atur]];
+function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { page: h[0] || 'beranda', id: h[1] || '' }; }
+
+function render() {
+  if (!S.data) return;
+  const r = route();
+  const nav = (cls) => NAV.map(([k, l, ic]) => `<a class="navlink ${r.page === k ? 'on' : ''}" href="#/${k}" ${r.page === k ? 'aria-current="page"' : ''}>${ic}<span>${k === 'atur' && cls === 'b' ? 'Atur' : l}</span></a>`).join('');
+  const nm = esc(S.data.settings.namaUsaha);
+  let root = $('#root');
+  if (!root.querySelector('.app')) {
+    root.innerHTML = `${DEMO ? `<div class="demo-bar"><b>Mode contoh.</b> Data ini hanya tersimpan di perangkat ini. Isi API_URL di index.html untuk menyimpan ke Google Sheets.</div>` : ''}
+    <div class="app"><nav class="side" aria-label="Menu"></nav><main class="main" id="main"></main></div><nav class="bottomnav" aria-label="Menu"></nav>`;
+  }
+  root.querySelector('.side').innerHTML = `<div class="brand"><span class="brand-mark"></span>${nm}</div>${nav('s')}<div class="side-foot">${DEMO ? 'Mode contoh' : 'Tersambung ke Google Sheets'}</div>`;
+  root.querySelector('.bottomnav').innerHTML = nav('b');
+  const views = { beranda: vBeranda, kos: r.id ? () => vKosDetail(r.id) : vKos, tagihan: vTagihan, kas: vKas, atur: vAtur };
+  const top = `<div class="topbar"><div class="brand"><span class="brand-mark"></span>${nm}</div></div>`;
+  const main = $('#main');
+  const y = window.scrollY, same = main.dataset.r === location.hash;
+  main.innerHTML = top + (views[r.page] || vBeranda)();
+  main.dataset.r = location.hash;
+  if (!same) window.scrollTo(0, 0); else window.scrollTo(0, y);
+}
+
+/* ---------- BERANDA ---------- */
+function vBeranda() {
+  const hs = Number(S.data.settings.hariSebelum) || 3;
+  const aktif = S.tg.filter(t => t.penyewa && t.penyewa.status === 'aktif');
+  const telat = aktif.filter(t => t.status === 'telat');
+  const dekat = aktif.filter(t => t.status === 'dekat');
+  const per = C.periodeOf(S.today);
+  const bln = S.tg.filter(t => t.periode === per);
+  const total = bln.reduce((a, t) => a + t.nominal, 0);
+  const masuk = bln.reduce((a, t) => a + Math.min(t.dibayar, t.nominal), 0);
+  const sisaTelat = bln.filter(t => t.status === 'telat').reduce((a, t) => a + t.sisa, 0);
+  const sisaBelum = total - masuk - sisaTelat;
+  const pct = v => total ? (v / total * 100).toFixed(2) + '%' : '0%';
+  const tunggakan = telat.reduce((a, t) => a + t.sisa, 0);
+  const nKamar = S.data.kamar.length, terisi = Object.values(S.ks).filter(s => s.status !== 'kosong').length;
+
+  let judul;
+  if (!S.data.kos.length) judul = 'Mulai dengan menambahkan kos pertama Anda.';
+  else if (!telat.length && !dekat.length) judul = 'Semua sewa aman. Belum ada yang perlu ditagih.';
+  else {
+    const a = [];
+    const nPt = new Set(telat.map(t => t.penyewaId)).size;
+    if (telat.length) a.push(`${nPt} penyewa telat bayar`);
+    if (dekat.length) a.push(`${dekat.length} jatuh tempo dalam ${hs} hari`);
+    judul = a.join(' dan ') + '.';
+  }
+  const perlu = telat.concat(dekat).sort((a, b) => a.hari - b.hari || a.jatuhTempo.localeCompare(b.jatuhTempo));
+
+  const kosBoards = S.data.kos.map(k => {
+    const ks = kamarKos(k.id), isi = ks.filter(x => S.ks[x.id] && S.ks[x.id].status !== 'kosong').length;
+    return `<div class="pad" style="border-bottom:1px solid var(--line)">
+      <div class="sechead" style="margin-bottom:10px"><a href="#/kos/${k.id}" style="color:inherit;text-decoration:none"><h2 style="font-size:15.5px">${esc(k.nama)}</h2></a><span class="hint">${isi}/${ks.length} terisi</span></div>
+      ${boardHTML(k.id)}</div>`;
+  }).join('');
+
+  return `
+  <section class="hero">
+    <div class="datel">${C.fmtHari(S.today)}</div>
+    <h1>${judul}</h1>
+  </section>
+  ${S.data.kos.length ? `
+  <div class="panel pad meter">
+    <div class="meter-top"><div><div class="muted small" style="font-weight:600">Sewa ${C.fmtPeriode(per)} terkumpul</div><div class="meter-big">${C.rupiah(masuk)}</div></div>
+    <div class="meter-of">dari ${C.rupiah(total)}</div></div>
+    <div class="bar" role="img" aria-label="Terkumpul ${pct(masuk)}"><i class="b-lunas" style="width:${pct(masuk)}"></i><i class="b-telat" style="width:${pct(sisaTelat)}"></i><i class="b-belum" style="width:${pct(sisaBelum)}"></i></div>
+    <div class="meter-legend"><span><i class="dot" style="background:var(--lunas)"></i>Masuk <b>${C.rupiahSingkat(masuk)}</b></span><span><i class="dot" style="background:var(--telat)"></i>Telat bulan ini <b>${C.rupiahSingkat(sisaTelat)}</b></span><span><i class="dot" style="background:#B9CBC7"></i>Belum jatuh tempo <b>${C.rupiahSingkat(Math.max(0, sisaBelum))}</b></span></div>
+    <div class="stats"><div><b class="${tunggakan ? 'neg' : ''}">${C.rupiahSingkat(tunggakan)}</b><span>Total tunggakan</span></div><div><b>${terisi}/${nKamar}</b><span>Kamar terisi</span></div><div><b>${nKamar - terisi}</b><span>Kamar kosong</span></div></div>
+  </div>` : ''}
+  <div class="home-grid">
+    <section class="sec">
+      <div class="sechead"><h2>Perlu ditagih</h2>${perlu.length ? `<a class="hint" href="#/tagihan">Lihat semua tagihan</a>` : ''}</div>
+      <div class="list">${perlu.length ? perlu.map(t => rowTagihan(t)).join('') : `<div class="empty"><b>Tidak ada yang perlu ditagih</b>Tagihan yang telat atau jatuh tempo dalam ${hs} hari akan muncul di sini.</div>`}</div>
+    </section>
+    <section class="sec">
+      <div class="sechead"><h2>Papan kamar</h2><span class="hint">Ketuk kamar untuk detail</span></div>
+      ${S.data.kos.length ? `<div class="panel" style="overflow:hidden">${kosBoards}<div class="pad" style="padding-top:2px">${LEGEND}</div></div>` :
+      `<button class="add-card" style="width:100%" data-act="tambahKos">${IC.plus}Tambah kos</button>`}
+    </section>
+  </div>`;
+}
+
+/* ---------- KOS ---------- */
+function ringkasKos(kosId) {
+  const per = C.periodeOf(S.today);
+  const ks = kamarKos(kosId);
+  const isi = ks.filter(x => S.ks[x.id] && S.ks[x.id].status !== 'kosong').length;
+  const masuk = S.data.pembayaran.filter(b => b.kosId === kosId && C.periodeOf(b.tanggal) === per).reduce((a, b) => a + Number(b.nominal), 0);
+  const tunggak = S.tg.filter(t => t.kosId === kosId && t.status === 'telat').reduce((a, t) => a + t.sisa, 0);
+  return { ks, isi, masuk, tunggak };
+}
+function vKos() {
+  const cards = S.data.kos.map(k => {
+    const r = ringkasKos(k.id);
+    return `<article class="panel kos-card" data-act="bukaKos" data-id="${k.id}">
+      <div><h2>${esc(k.nama)}</h2><div class="kos-sub">${esc(k.alamat || 'Alamat belum diisi')}</div></div>
+      ${boardHTML(k.id)}
+      <div class="kos-foot"><span>${r.isi} dari ${r.ks.length} kamar terisi</span><span>Masuk bulan ini <b>${C.rupiahSingkat(r.masuk)}</b></span></div>
+    </article>`;
+  }).join('');
+  return `<div class="pagehead"><div><h1>Kos-kosan</h1><p class="muted">${S.data.kos.length} kos, ${S.data.kamar.length} kamar</p></div>
+    <button class="btn" data-act="tambahKos">${IC.plus}Tambah kos</button></div>
+    <div class="kos-grid">${cards}<button class="add-card" data-act="tambahKos">${IC.plus}Tambah kos baru</button></div>
+    ${S.data.kos.length ? LEGEND : ''}`;
+}
+function vKosDetail(id) {
+  const k = kosById(id);
+  if (!k) return `<a class="back" href="#/kos">${IC.left}Kos</a><div class="empty"><b>Kos tidak ditemukan</b>Mungkin sudah dihapus.</div>`;
+  const r = ringkasKos(id);
+  const rows = r.ks.map(km => {
+    const st = S.ks[km.id];
+    const t = st.tagihan;
+    return `<div class="row tap" data-act="kamar" data-id="${km.id}">
+      <span class="door sm ${st.status}" aria-hidden="true">${esc(km.nomor)}</span>
+      <div class="row-main"><div class="row-title">${st.penyewa ? esc(st.penyewa.nama) : '<span class="muted">Kosong</span>'}</div>
+      <div class="row-meta">${C.rupiah(st.penyewa ? st.penyewa.harga : km.harga)} per bulan${st.penyewa ? ', bayar tiap tgl ' + st.penyewa.hariTempo : ''}</div></div>
+      <div class="row-side">${st.status === 'kosong' ? '<span class="pill kosong">Kosong</span>' : `<span class="pill ${st.status}">${t ? teksTempo(t) : STATUS_LABEL[st.status]}</span>`}</div>
+    </div>`;
+  }).join('');
+  return `<a class="back" href="#/kos">${IC.left}Semua kos</a>
+  <div class="pagehead"><div><h1>${esc(k.nama)}</h1><p class="muted">${esc(k.alamat || 'Alamat belum diisi')}</p></div>
+    <div class="btnrow"><button class="btn ghost sm" data-act="ubahKos" data-id="${k.id}">${IC.edit}Ubah</button><button class="btn sm" data-act="tambahKamar" data-id="${k.id}">${IC.plus}Tambah kamar</button></div></div>
+  <div class="panel">
+    <div class="pad">${boardHTML(k.id, true)}${LEGEND}</div>
+    <div class="kv" style="border-top:1px solid var(--line);margin:0"><div><b>${r.isi}/${r.ks.length}</b><span>Kamar terisi</span></div><div><b>${C.rupiahSingkat(r.masuk)}</b><span>Masuk bulan ini</span></div><div><b class="${r.tunggak ? 'neg' : ''}">${C.rupiahSingkat(r.tunggak)}</b><span>Tunggakan</span></div></div>
+  </div>
+  <section class="sec"><div class="sechead"><h2>Daftar kamar</h2></div><div class="list">${rows || '<div class="empty"><b>Belum ada kamar</b>Tambahkan kamar untuk kos ini.</div>'}</div></section>
+  <div style="margin-top:28px"><button class="btn danger sm" data-act="hapusKos" data-id="${k.id}">${IC.trash}Hapus kos ini</button></div>`;
+}
+
+/* ---------- TAGIHAN ---------- */
+function vTagihan() {
+  let list = S.tg.filter(t => !S.fKos || t.kosId === S.fKos);
+  const diBulan = list.filter(t => t.periode === S.bulan);
+  const n = {
+    semua: diBulan.length, belumlunas: diBulan.filter(t => t.status !== 'lunas').length,
+    lunas: diBulan.filter(t => t.status === 'lunas').length, telat: list.filter(t => t.status === 'telat').length
+  };
+  if (S.fStatus === 'telat') list = list.filter(t => t.status === 'telat');
+  else {
+    list = diBulan;
+    if (S.fStatus === 'belumlunas') list = list.filter(t => t.status !== 'lunas');
+    if (S.fStatus === 'lunas') list = list.filter(t => t.status === 'lunas');
+  }
+  list.sort((a, b) => (a.status === 'lunas') - (b.status === 'lunas') || a.jatuhTempo.localeCompare(b.jatuhTempo));
+  const tot = diBulan.reduce((a, t) => a + t.nominal, 0), msk = diBulan.reduce((a, t) => a + Math.min(t.dibayar, t.nominal), 0);
+  const chip = (k, l) => `<button class="chip ${S.fStatus === k ? 'on' : ''}" data-act="fStatus" data-v="${k}">${l}<small>${n[k]}</small></button>`;
+  return `<div class="pagehead"><div><h1>Tagihan</h1><p class="muted">Tagihan dibuat otomatis tiap bulan sesuai tanggal bayar penyewa.</p></div></div>
+  <div class="toolbar">${S.fStatus === 'telat' ? '' : monthSw('tagihan', S.bulan)}
+    <select class="select" data-change="fKos" aria-label="Pilih kos"><option value="">Semua kos</option>${S.data.kos.map(k => `<option value="${k.id}" ${S.fKos === k.id ? 'selected' : ''}>${esc(k.nama)}</option>`).join('')}</select></div>
+  <div class="chips" style="margin-bottom:14px">${chip('belumlunas', 'Belum lunas')}${chip('telat', 'Telat (semua bulan)')}${chip('lunas', 'Lunas')}${chip('semua', 'Semua')}</div>
+  ${S.fStatus === 'telat' ? '' : `<div class="panel totals"><div><span>Total tagihan</span><b>${C.rupiahSingkat(tot)}</b></div><div><span>Sudah masuk</span><b>${C.rupiahSingkat(msk)}</b></div><div><span>Belum masuk</span><b class="${tot - msk ? 'neg' : ''}">${C.rupiahSingkat(tot - msk)}</b></div></div>`}
+  <div class="list">${list.length ? list.map(t => rowTagihan(t)).join('') : `<div class="empty"><b>Tidak ada tagihan di sini</b>${S.fStatus === 'telat' ? 'Semua penyewa membayar tepat waktu.' : 'Coba pilih bulan atau filter lain.'}</div>`}</div>`;
+}
+
+/* ---------- KAS ---------- */
+function vKas() {
+  const per = S.kasBulan;
+  const bayar = S.data.pembayaran.filter(b => C.periodeOf(b.tanggal) === per);
+  const keluar = S.data.pengeluaran.filter(e => C.periodeOf(e.tanggal) === per);
+  const rows = S.data.kos.map(k => {
+    const m = bayar.filter(b => b.kosId === k.id).reduce((a, b) => a + Number(b.nominal), 0);
+    const e = keluar.filter(x => x.kosId === k.id).reduce((a, x) => a + Number(x.nominal), 0);
+    return { k, m, e, b: m - e };
+  });
+  const tm = rows.reduce((a, r) => a + r.m, 0), te = rows.reduce((a, r) => a + r.e, 0);
+  const maxM = Math.max(1, ...rows.map(r => r.m));
+  const tagihanBy = Object.fromEntries(S.tg.map(t => [t.id, t]));
+  const bayarRows = bayar.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).map(b => {
+    const t = tagihanBy[b.tagihanId], p = penyewaById(b.penyewaId), k = kosById(b.kosId);
+    return `<div class="row tap" data-act="kuitansi" data-id="${b.id}"><div class="row-main"><div class="row-title">${esc(p ? p.nama : 'Penyewa')}</div>
+      <div class="row-meta">${esc(k ? k.nama : '')}${t && t.kamar ? ' kamar ' + esc(t.kamar.nomor) : ''}, ${C.fmtTglPendek(b.tanggal)}, ${esc(b.metode)}</div></div>
+      <div class="row-side"><div class="amt" style="color:var(--lunas)">+${C.rupiah(b.nominal)}</div></div></div>`;
+  }).join('');
+  const keluarRows = keluar.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).map(e => {
+    const k = kosById(e.kosId);
+    return `<div class="row tap" data-act="ubahPengeluaran" data-id="${e.id}"><div class="row-main"><div class="row-title">${esc(e.kategori)}${e.keterangan ? ', <span class="muted" style="font-weight:500">' + esc(e.keterangan) + '</span>' : ''}</div>
+      <div class="row-meta">${esc(k ? k.nama : '')}, ${C.fmtTglPendek(e.tanggal)}</div></div><div class="row-side"><div class="amt neg">-${C.rupiah(e.nominal)}</div></div></div>`;
+  }).join('');
+  return `<div class="pagehead"><div><h1>Kas</h1><p class="muted">Uang masuk dari sewa dan uang keluar untuk biaya kos.</p></div>
+    <button class="btn" data-act="tambahPengeluaran">${IC.plus}Catat pengeluaran</button></div>
+  <div class="toolbar">${monthSw('kas', per)}</div>
+  <div class="panel totals"><div><span>Uang masuk</span><b style="color:var(--lunas)">${C.rupiahSingkat(tm)}</b></div><div><span>Pengeluaran</span><b class="neg">${C.rupiahSingkat(te)}</b></div><div><span>Bersih</span><b class="${tm - te < 0 ? 'neg' : ''}">${C.rupiahSingkat(tm - te)}</b></div></div>
+  <div class="panel" style="overflow:hidden"><table class="kas-table"><thead><tr><th>Kos</th><th class="num">Masuk</th><th class="num hide-sm">Keluar</th><th class="num">Bersih</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td><a href="#/kos/${r.k.id}" style="color:inherit;text-decoration:none;font-weight:650">${esc(r.k.nama)}</a><div class="minibar"><i style="width:${(r.m / maxM * 100).toFixed(1)}%"></i></div></td><td class="num">${C.rupiah(r.m)}</td><td class="num hide-sm neg">${r.e ? C.rupiah(r.e) : '-'}</td><td class="num ${r.b < 0 ? 'neg' : ''}"><b>${C.rupiah(r.b)}</b></td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td><td class="num">${C.rupiah(tm)}</td><td class="num hide-sm">${C.rupiah(te)}</td><td class="num">${C.rupiah(tm - te)}</td></tr></tfoot></table></div>
+  <div class="home-grid">
+    <section class="sec"><div class="sechead"><h2>Pembayaran masuk</h2><span class="hint">${bayar.length} transaksi</span></div>
+      <div class="list">${bayarRows || '<div class="empty"><b>Belum ada pembayaran</b>Pembayaran yang dicatat bulan ini muncul di sini.</div>'}</div></section>
+    <section class="sec"><div class="sechead"><h2>Pengeluaran</h2><span class="hint">${keluar.length} catatan</span></div>
+      <div class="list">${keluarRows || '<div class="empty"><b>Belum ada pengeluaran</b>Catat listrik, air, wifi, atau perbaikan per kos.</div>'}</div></section>
+  </div>`;
+}
+
+/* ---------- PENGATURAN ---------- */
+function vAtur() {
+  const s = S.data.settings;
+  const tags = ['{nama}', '{kos}', '{kamar}', '{periode}', '{nominal}', '{sisa}', '{jatuh_tempo}', '{telat}'];
+  const tagsK = ['{nama}', '{kos}', '{kamar}', '{periode}', '{dibayar}', '{tanggal_bayar}', '{status_lunas}'];
+  const tagBtns = (arr, target) => `<div class="tags">${arr.map(t => `<code data-act="sisip" data-t="${target}" data-v="${t}" title="Sisipkan">${t}</code>`).join('')}</div>`;
+  return `<div class="pagehead"><div><h1>Pengaturan</h1><p class="muted">Atur nama usaha, PIN, dan pengingat WhatsApp.</p></div></div>
+  <form data-form="settings" class="settings-grid">
+    <div class="panel pad">
+      <h2>Usaha</h2><p class="desc">Nama ini muncul di aplikasi dan kuitansi.</p>
+      <div class="field"><label for="f-nama">Nama usaha</label><input class="input" id="f-nama" name="namaUsaha" value="${esc(s.namaUsaha)}" required></div>
+      ${DEMO ? '' : `<div class="field"><label for="f-pin">PIN baru</label><input class="input" id="f-pin" name="pinBaru" inputmode="numeric" pattern="[0-9]{4,8}" placeholder="Kosongkan kalau tidak diganti" autocomplete="new-password"><span class="help">4 sampai 8 angka. Dipakai untuk masuk ke aplikasi.</span></div>`}
+      <div class="divider"></div>
+      <h2>Pengingat WhatsApp otomatis</h2><p class="desc">Dikirim tiap pagi jam 08.00 WITA lewat Fonnte. Tombol WhatsApp di daftar tagihan tetap bisa dipakai tanpa Fonnte.</p>
+      <div class="field"><label for="f-token">Token Fonnte</label><input class="input" id="f-token" name="fonnteToken" placeholder="${s.adaToken ? 'Tersimpan: ' + esc(s.tokenTersamar) + '. Isi untuk mengganti' : 'Tempel token dari fonnte.com'}" autocomplete="off"></div>
+      <div class="field"><label for="f-wa">WhatsApp pemilik</label><input class="input" id="f-wa" name="waPemilik" inputmode="tel" value="${esc(s.waPemilik)}" placeholder="08xxxxxxxxxx"><span class="help">Menerima ringkasan harian siapa saja yang telat dan jatuh tempo.</span></div>
+      <label class="switch"><span><b>Kirim ke penyewa</b><br><span class="small muted">Pengingat langsung ke WhatsApp penyewa</span></span><input type="checkbox" name="kirimPenyewa" ${s.kirimPenyewa === 'ya' ? 'checked' : ''}></label>
+      <label class="switch"><span><b>Kirim ringkasan ke pemilik</b><br><span class="small muted">Satu pesan berisi semua tagihan yang perlu ditagih</span></span><input type="checkbox" name="kirimPemilik" ${s.kirimPemilik === 'ya' ? 'checked' : ''}></label>
+      <div class="grid2" style="margin-top:14px">
+        <div class="field"><label for="f-hs">Ingatkan sebelum</label><select class="select" id="f-hs" name="hariSebelum">${[1, 2, 3, 5, 7].map(v => `<option value="${v}" ${+s.hariSebelum === v ? 'selected' : ''}>${v} hari</option>`).join('')}</select></div>
+        <div class="field"><label for="f-ul">Kalau telat, ulangi tiap</label><select class="select" id="f-ul" name="ulangTelat">${[1, 2, 3, 5, 7].map(v => `<option value="${v}" ${+s.ulangTelat === v ? 'selected' : ''}>${v} hari</option>`).join('')}</select></div>
+      </div>
+      ${DEMO ? `<div class="note"><b>Belum aktif di mode contoh.</b> Pengingat otomatis berjalan setelah aplikasi terhubung ke Google Sheets dan token Fonnte diisi.</div>` :
+      `<div class="btnrow"><button type="button" class="btn ghost sm" data-act="tesWa">${IC.send}Kirim pesan tes</button><button type="button" class="btn ghost sm" data-act="kirimSekarang">Jalankan pengingat sekarang</button></div>`}
+    </div>
+    <div class="panel pad">
+      <h2>Isi pesan</h2><p class="desc">Ketuk kode untuk menyisipkannya ke pesan. Kode diganti otomatis dengan data penyewa.</p>
+      <div class="field"><label for="t-ping">Pengingat sebelum jatuh tempo</label><textarea class="textarea" id="t-ping" name="templatePengingat">${esc(s.templatePengingat)}</textarea>${tagBtns(tags, 't-ping')}</div>
+      <div class="field"><label for="t-telat">Pesan telat bayar</label><textarea class="textarea" id="t-telat" name="templateTelat">${esc(s.templateTelat)}</textarea>${tagBtns(tags, 't-telat')}</div>
+      <div class="field"><label for="t-kw">Kuitansi pembayaran</label><textarea class="textarea" id="t-kw" name="templateKuitansi">${esc(s.templateKuitansi)}</textarea>${tagBtns(tagsK, 't-kw')}</div>
+      <button class="btn block" type="submit">Simpan pengaturan</button>
+      ${DEMO ? `<div class="divider"></div><button type="button" class="btn danger sm" data-act="resetDemo">Kembalikan data contoh</button>` : `<div class="divider"></div><button type="button" class="btn ghost sm" data-act="keluarApp">${IC.keluar}Keluar dari aplikasi</button>`}
+    </div>
+  </form>`;
+}
+
+/* ---------- sheet ---------- */
+let sheetEl = null, lastFocus = null;
+function sheet(html) {
+  closeSheet(true);
+  lastFocus = document.activeElement;
+  const w = document.createElement('div');
+  w.className = 'sheet-wrap';
+  w.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  w.addEventListener('mousedown', e => { if (e.target === w) closeSheet(); });
+  document.body.appendChild(w);
+  document.body.style.overflow = 'hidden';
+  sheetEl = w;
+  requestAnimationFrame(() => { w.classList.add('open'); const h = w.querySelector('h2'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } });
+  w.querySelectorAll('input.money').forEach(i => i.value = fmtAngka(angka(i.value)));
+  return w;
+}
+function closeSheet(instant) {
+  if (!sheetEl) return;
+  const w = sheetEl; sheetEl = null;
+  document.body.style.overflow = '';
+  if (instant) w.remove(); else { w.classList.remove('open'); setTimeout(() => w.remove(), 220); }
+  if (!instant && lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+}
+const head = (judul, sub) => `<div class="sh-head"><div><h2>${judul}</h2>${sub ? `<p>${sub}</p>` : ''}</div><button class="icon-btn" type="button" data-act="tutup" aria-label="Tutup">${IC.x}</button></div>`;
+function konfirmasi(judul, teks, ok, bahaya) {
+  return new Promise(res => {
+    const w = sheet(`${head(judul)}<p style="margin:0 0 18px" class="muted">${teks}</p>
+      <div class="sh-actions"><button class="btn ghost" data-k="0">Batal</button><button class="btn ${bahaya ? 'danger solid' : ''}" data-k="1">${ok}</button></div>`);
+    w.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => { closeSheet(true); res(b.dataset.k === '1'); }));
+    w.querySelector('[data-act=tutup]').addEventListener('click', () => res(false));
+  });
+}
+
+/* ---------- sheet: kamar ---------- */
+function openKamar(id) {
+  const km = kamarById(id); if (!km) return;
+  const kos = kosById(km.kosId), st = S.ks[id];
+  if (!st.penyewa) {
+    sheet(`${head(`Kamar ${esc(km.nomor)}`, esc(kos.nama))}
+      <div class="callout belum">Kamar ini kosong. Harga sewa ${C.rupiah(km.harga)} per bulan${km.fasilitas ? ', ' + esc(km.fasilitas) : ''}.</div>
+      <button class="btn block" data-act="isiKamar" data-id="${id}">${IC.user}Isi kamar dengan penyewa</button>
+      <div class="sh-actions" style="margin-top:8px"><button class="btn ghost" data-act="ubahKamar" data-id="${id}">${IC.edit}Ubah kamar</button><button class="btn danger" data-act="hapusKamar" data-id="${id}">${IC.trash}Hapus</button></div>`);
+    return;
+  }
+  const p = st.penyewa;
+  const tg = S.tg.filter(t => t.penyewaId === p.id).sort((a, b) => b.jatuhTempo.localeCompare(a.jatuhTempo));
+  const belum = tg.filter(t => t.status !== 'lunas').sort((a, b) => a.jatuhTempo.localeCompare(b.jatuhTempo));
+  const tunggak = belum.filter(t => t.status === 'telat').reduce((a, t) => a + t.sisa, 0);
+  const next = belum[0];
+  const call = next ? (next.status === 'telat' ? `<div class="callout telat"><b>Telat bayar.</b> Tunggakan ${C.rupiah(tunggak)} dari ${belum.filter(t => t.status === 'telat').length} bulan.</div>` :
+    `<div class="callout ${next.status}">Tagihan ${C.fmtPeriode(next.periode)} ${C.rupiah(next.sisa)}, ${(t => t[0].toLowerCase() + t.slice(1))(teksTempo(next))}.</div>`) :
+    `<div class="callout lunas">Semua tagihan sudah lunas.</div>`;
+  const wa = next ? waTagihan(next) : '';
+  sheet(`${head(esc(p.nama), `${esc(kos.nama)}, kamar ${esc(km.nomor)}`)}
+    ${call}
+    <div class="sh-actions" style="margin:0 0 16px">${next ? `<button class="btn" data-act="bayar" data-id="${next.id}">Catat bayar</button>` : ''}${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener">${IC.wa}Ingatkan via WA</a>` : ''}</div>
+    <dl class="info">
+      <dt>WhatsApp</dt><dd>${p.wa ? `<a href="https://wa.me/${C.normalWa(p.wa)}" target="_blank" rel="noopener">${esc(p.wa)}</a>` : '-'}</dd>
+      <dt>Sewa per bulan</dt><dd>${C.rupiah(p.harga)}</dd>
+      <dt>Bayar tiap tanggal</dt><dd>${p.hariTempo}</dd>
+      <dt>Masuk sejak</dt><dd>${C.fmtTgl(p.tglMasuk)}</dd>
+      ${p.deposit ? `<dt>Deposit</dt><dd>${C.rupiah(p.deposit)}</dd>` : ''}
+      ${p.catatan ? `<dt>Catatan</dt><dd>${esc(p.catatan)}</dd>` : ''}
+    </dl>
+    <div class="flabel" style="margin-bottom:8px">Riwayat tagihan</div>
+    <div class="mini-list">${tg.slice(0, 6).map(t => `<div class="row tap" data-act="tagihan" data-id="${t.id}"><div class="row-main"><div class="row-title" style="font-weight:650">${C.fmtPeriode(t.periode)}</div><div class="row-meta">${C.rupiah(t.nominal)}${t.sebagian ? ', dibayar ' + C.rupiah(t.dibayar) : ''}</div></div><span class="pill ${t.status}">${t.status === 'lunas' ? 'Lunas' : teksTempo(t)}</span></div>`).join('') || '<div class="empty">Belum ada tagihan</div>'}</div>
+    ${tg.length > 6 ? `<p class="small muted" style="margin:-8px 0 16px">Menampilkan 6 dari ${tg.length} bulan. Lihat lengkapnya di menu Tagihan.</p>` : ''}
+    <div class="sh-actions"><button class="btn ghost" data-act="ubahPenyewa" data-id="${p.id}">${IC.edit}Ubah data</button><button class="btn danger" data-act="keluar" data-id="${p.id}">${IC.keluar}Penyewa keluar</button></div>`);
+}
+
+function formPenyewa(kamarId, p) {
+  const km = kamarById(kamarId), kos = kosById(km.kosId);
+  const baru = !p;
+  sheet(`${head(baru ? `Isi kamar ${esc(km.nomor)}` : 'Ubah data penyewa', esc(kos.nama) + (baru ? '' : ', kamar ' + esc(km.nomor)))}
+  <form data-form="penyewa">
+    <input type="hidden" name="id" value="${p ? p.id : ''}"><input type="hidden" name="kamarId" value="${kamarId}">
+    <div class="field"><label for="p-nama">Nama penyewa</label><input class="input" id="p-nama" name="nama" required value="${esc(p ? p.nama : '')}" autocomplete="off"></div>
+    <div class="field"><label for="p-wa">Nomor WhatsApp</label><input class="input" id="p-wa" name="wa" inputmode="tel" placeholder="08xxxxxxxxxx" value="${esc(p ? p.wa : '')}"><span class="help">Untuk pengingat dan kuitansi.</span></div>
+    <div class="grid2">
+      ${baru ? `<div class="field"><label for="p-masuk">Tanggal masuk</label><input class="input" type="date" id="p-masuk" name="tglMasuk" required value="${S.today}"></div>` : ''}
+      <div class="field" ${baru ? '' : 'style="grid-column:1/-1"'}><label for="p-hari">Bayar tiap tanggal</label><input class="input" type="number" min="1" max="31" id="p-hari" name="hariTempo" required value="${p ? p.hariTempo : C.parse(S.today).getDate()}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="p-harga">Sewa per bulan</label><div class="prefix"><span>Rp</span><input class="input money" id="p-harga" name="harga" inputmode="numeric" required value="${p ? p.harga : km.harga}"></div></div>
+      <div class="field"><label for="p-dep">Deposit</label><div class="prefix"><span>Rp</span><input class="input money" id="p-dep" name="deposit" inputmode="numeric" value="${p ? p.deposit : ''}" placeholder="0"></div></div>
+    </div>
+    <div class="field"><label for="p-cat">Catatan</label><input class="input" id="p-cat" name="catatan" value="${esc(p ? p.catatan : '')}" placeholder="Opsional, misal asal kampus atau kendaraan"></div>
+    ${baru ? `<p class="small muted" style="margin:-4px 0 14px">Tagihan pertama dibuat sesuai tanggal masuk, lalu otomatis tiap bulan.</p>` : `<p class="small muted" style="margin:-4px 0 14px">Perubahan harga dan tanggal bayar berlaku untuk tagihan yang belum dibayar dan belum lewat.</p>`}
+    <div class="sh-actions"><button type="button" class="btn ghost" data-act="${baru ? 'tutup' : 'kamar'}" data-id="${kamarId}">Batal</button><button class="btn" type="submit">${baru ? 'Simpan penyewa' : 'Simpan perubahan'}</button></div>
+  </form>`);
+  const masuk = $('#p-masuk'), hari = $('#p-hari');
+  if (masuk) masuk.addEventListener('change', () => { if (masuk.value) hari.value = C.parse(masuk.value).getDate(); });
+}
+
+/* ---------- sheet: tagihan & bayar ---------- */
+function openTagihan(id) {
+  const t = tagihanById(id); if (!t) return;
+  const bayar = S.data.pembayaran.filter(b => b.tagihanId === id).sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+  const wa = t.status !== 'lunas' ? waTagihan(t) : '';
+  sheet(`${head('Tagihan ' + C.fmtPeriode(t.periode), `${esc(t.penyewa ? t.penyewa.nama : '')}, ${esc(t.kos ? t.kos.nama : '')} kamar ${esc(t.kamar ? t.kamar.nomor : '')}`)}
+    <div class="callout ${t.status}">${t.status === 'lunas' ? 'Tagihan ini sudah lunas.' : teksTempo(t) + '. Sisa ' + C.rupiah(t.sisa) + '.'}</div>
+    <dl class="info"><dt>Jatuh tempo</dt><dd>${C.fmtTgl(t.jatuhTempo)}</dd><dt>Nominal</dt><dd>${C.rupiah(t.nominal)}</dd><dt>Sudah dibayar</dt><dd>${C.rupiah(t.dibayar)}</dd>${t.catatan ? `<dt>Catatan</dt><dd>${esc(t.catatan)}</dd>` : ''}</dl>
+    ${bayar.length ? `<div class="flabel" style="margin-bottom:8px">Pembayaran</div><div class="mini-list">${bayar.map(b => `<div class="row tap" data-act="kuitansi" data-id="${b.id}"><div class="row-main"><div class="row-title" style="font-weight:650">${C.fmtTgl(b.tanggal)}</div><div class="row-meta">${esc(b.metode)}${b.catatan ? ', ' + esc(b.catatan) : ''}</div></div><div class="amt">${C.rupiah(b.nominal)}</div></div>`).join('')}</div>` : ''}
+    ${t.status !== 'lunas' ? `<div class="sh-actions" style="margin-bottom:8px"><button class="btn" data-act="bayar" data-id="${t.id}">Catat bayar</button>${wa ? `<a class="btn ghost" href="${wa}" target="_blank" rel="noopener">${IC.wa}Ingatkan</a>` : ''}</div>` : ''}
+    <div class="sh-actions"><button class="btn ghost" data-act="ubahTagihan" data-id="${t.id}">${IC.edit}Ubah nominal</button>${t.kamar ? `<button class="btn ghost" data-act="kamar" data-id="${t.kamar.id}">Lihat kamar</button>` : ''}</div>`);
+}
+
+function openBayar(id) {
+  const t = tagihanById(id); if (!t) return;
+  sheet(`${head('Catat pembayaran', `${esc(t.penyewa ? t.penyewa.nama : '')}, ${esc(t.kos ? t.kos.nama : '')} kamar ${esc(t.kamar ? t.kamar.nomor : '')}`)}
+  <form data-form="bayar">
+    <input type="hidden" name="tagihanId" value="${t.id}">
+    <div class="callout ${t.status}">Sewa ${C.fmtPeriode(t.periode)}: sisa ${C.rupiah(t.sisa)}${t.sebagian ? ' (sudah dibayar ' + C.rupiah(t.dibayar) + ')' : ''}.</div>
+    <div class="field"><label for="b-nom">Jumlah dibayar</label><div class="prefix"><span>Rp</span><input class="input money" id="b-nom" name="nominal" inputmode="numeric" required value="${t.sisa}"></div>
+      <div class="quick"><button type="button" data-isi="${t.sisa}">Lunas ${C.rupiah(t.sisa)}</button>${t.sisa >= 200000 ? `<button type="button" data-isi="${Math.round(t.sisa / 2 / 1000) * 1000}">Setengah</button>` : ''}</div></div>
+    <div class="field"><label for="b-tgl">Tanggal bayar</label><input class="input" type="date" id="b-tgl" name="tanggal" required value="${S.today}" max="${S.today}"></div>
+    <div class="field"><span class="flabel">Cara bayar</span><div class="seg">${['Tunai', 'Transfer', 'QRIS'].map((m, i) => `<label><input type="radio" name="metode" value="${m}" ${i === 0 ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div></div>
+    <div class="field"><label for="b-cat">Catatan</label><input class="input" id="b-cat" name="catatan" placeholder="Opsional"></div>
+    <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">Simpan pembayaran</button></div>
+  </form>`);
+  sheetEl.querySelectorAll('[data-isi]').forEach(b => b.addEventListener('click', () => { $('#b-nom').value = fmtAngka(+b.dataset.isi); }));
+}
+
+function openKuitansi(bayarId) {
+  const b = S.data.pembayaran.find(x => x.id === bayarId); if (!b) return;
+  const t = tagihanById(b.tagihanId) || {};
+  const p = penyewaById(b.penyewaId) || {}, kos = kosById(b.kosId) || {}, km = t.kamar || {};
+  const s = S.data.settings;
+  const lunas = t.status === 'lunas';
+  const pesan = C.isiTemplate(s.templateKuitansi, {
+    nama: p.nama, kos: kos.nama, kamar: km.nomor, periode: t.periode ? C.fmtPeriode(t.periode) : '',
+    dibayar: C.rupiah(b.nominal), tanggal_bayar: C.fmtTgl(b.tanggal),
+    status_lunas: lunas ? 'Tagihan bulan ini sudah lunas.' : 'Sisa tagihan ' + C.rupiah(t.sisa) + '.'
+  });
+  const wa = waLink(p.wa, pesan);
+  sheet(`${head('Kuitansi pembayaran')}
+    <div class="receipt">
+      <div class="receipt-top"><div><b>${esc(s.namaUsaha)}</b><small>${esc(kos.nama || '')}${kos.alamat ? ', ' + esc(kos.alamat) : ''}</small></div><div style="text-align:right"><small>No.</small><b style="font-size:13px">${esc(b.id.slice(-7).toUpperCase())}</b></div></div>
+      <dl><dt>Diterima dari</dt><dd>${esc(p.nama || '-')}</dd><dt>Kamar</dt><dd>${esc(km.nomor || '-')}</dd><dt>Untuk sewa</dt><dd>${t.periode ? C.fmtPeriode(t.periode) : '-'}</dd><dt>Tanggal</dt><dd>${C.fmtTgl(b.tanggal)}</dd><dt>Cara bayar</dt><dd>${esc(b.metode)}</dd>${!lunas && t.sisa ? `<dt>Sisa tagihan</dt><dd class="neg">${C.rupiah(t.sisa)}</dd>` : ''}</dl>
+      <div class="receipt-amt"><span class="muted">Jumlah</span>${lunas ? '<span class="stamp">LUNAS</span>' : ''}<b>${C.rupiah(b.nominal)}</b></div>
+    </div>
+    <div class="sh-actions" style="margin-top:16px">${wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener">${IC.wa}Kirim ke WA penyewa</a>` : ''}<button class="btn ghost" data-act="cetak">${IC.print}Cetak</button></div>
+    <div style="margin-top:14px;text-align:center"><button class="btn danger sm" data-act="hapusBayar" data-id="${b.id}">${IC.trash}Batalkan pembayaran ini</button></div>`);
+}
+
+/* ---------- sheet: kos & kamar ---------- */
+function formKos(k) {
+  const baru = !k;
+  sheet(`${head(baru ? 'Tambah kos' : 'Ubah kos', baru ? 'Kamar dibuat otomatis, nanti bisa diubah satu per satu.' : '')}
+  <form data-form="kos">
+    <input type="hidden" name="id" value="${k ? k.id : ''}">
+    <div class="field"><label for="k-nama">Nama kos</label><input class="input" id="k-nama" name="nama" required value="${esc(k ? k.nama : '')}" placeholder="Misal: Kos Mekarsari" autocomplete="off"></div>
+    <div class="field"><label for="k-al">Alamat</label><input class="input" id="k-al" name="alamat" value="${esc(k ? k.alamat : '')}" placeholder="Opsional"></div>
+    ${baru ? `<div class="grid2">
+      <div class="field"><label for="k-n">Jumlah kamar</label><input class="input" type="number" min="0" max="200" id="k-n" name="jumlahKamar" required value="8"></div>
+      <div class="field"><label for="k-aw">Awalan nomor</label><input class="input" id="k-aw" name="awalan" maxlength="3" placeholder="Opsional, misal A"></div></div>
+    <div class="field"><label for="k-h">Harga sewa per kamar</label><div class="prefix"><span>Rp</span><input class="input money" id="k-h" name="hargaDefault" inputmode="numeric" required placeholder="750.000"></div><span class="help" id="k-prev"></span></div>` :
+    `<div class="field"><label for="k-cat">Catatan</label><input class="input" id="k-cat" name="catatan" value="${esc(k.catatan || '')}" placeholder="Opsional"></div>`}
+    <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">${baru ? 'Tambah kos' : 'Simpan perubahan'}</button></div>
+  </form>`);
+  if (baru) {
+    const upd = () => { const n = +$('#k-n').value || 0, a = $('#k-aw').value.trim(), w = Math.max(2, String(n).length), f = i => a + String(i).padStart(w, '0'); $('#k-prev').textContent = n ? `Akan dibuat kamar ${f(1)} sampai ${f(n)}.` : 'Kamar bisa ditambahkan nanti.'; };
+    $('#k-n').addEventListener('input', upd); $('#k-aw').addEventListener('input', upd); upd();
+  }
+}
+function formKamar(kosId, km) {
+  const kos = kosById(km ? km.kosId : kosId);
+  const ks = kamarKos(kos.id);
+  let saran = '';
+  if (!km) { const nums = ks.map(x => parseInt(x.nomor.replace(/\D/g, ''), 10)).filter(n => !isNaN(n)); saran = String((nums.length ? Math.max(...nums) : 0) + 1).padStart(2, '0'); }
+  const hargaUmum = ks.length ? ks[ks.length - 1].harga : '';
+  sheet(`${head(km ? 'Ubah kamar ' + esc(km.nomor) : 'Tambah kamar', esc(kos.nama))}
+  <form data-form="kamar">
+    <input type="hidden" name="id" value="${km ? km.id : ''}"><input type="hidden" name="kosId" value="${kos.id}">
+    <div class="grid2">
+      <div class="field"><label for="r-no">Nomor kamar</label><input class="input" id="r-no" name="nomor" required value="${esc(km ? km.nomor : saran)}"></div>
+      <div class="field"><label for="r-h">Harga sewa</label><div class="prefix"><span>Rp</span><input class="input money" id="r-h" name="harga" inputmode="numeric" required value="${km ? km.harga : hargaUmum}"></div></div>
+    </div>
+    <div class="field"><label for="r-f">Fasilitas</label><input class="input" id="r-f" name="fasilitas" value="${esc(km ? km.fasilitas : '')}" placeholder="Opsional, misal kamar mandi dalam, AC"></div>
+    ${km && S.ks[km.id].penyewa ? '<p class="small muted" style="margin:-4px 0 14px">Harga sewa penyewa saat ini diatur di data penyewa. Harga kamar dipakai untuk penyewa berikutnya.</p>' : ''}
+    <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">${km ? 'Simpan perubahan' : 'Tambah kamar'}</button></div>
+  </form>`);
+}
+function formPengeluaran(e) {
+  const kat = ['Listrik', 'Air', 'Wifi', 'Perbaikan', 'Kebersihan', 'Pajak', 'Lainnya'];
+  const kosId = e ? e.kosId : (route().page === 'kos' && route().id) || (S.data.kos[0] || {}).id;
+  sheet(`${head(e ? 'Ubah pengeluaran' : 'Catat pengeluaran')}
+  <form data-form="pengeluaran">
+    <input type="hidden" name="id" value="${e ? e.id : ''}">
+    <div class="field"><label for="e-kos">Untuk kos</label><select class="select" id="e-kos" name="kosId" required>${S.data.kos.map(k => `<option value="${k.id}" ${k.id === kosId ? 'selected' : ''}>${esc(k.nama)}</option>`).join('')}</select></div>
+    <div class="field"><span class="flabel">Kategori</span><div class="seg">${kat.map((k, i) => `<label style="flex:0 0 auto;min-width:0"><input type="radio" name="kategori" value="${k}" ${(e ? e.kategori === k : i === 0) ? 'checked' : ''}><span style="padding:8px 12px">${k}</span></label>`).join('')}</div></div>
+    <div class="grid2">
+      <div class="field"><label for="e-nom">Nominal</label><div class="prefix"><span>Rp</span><input class="input money" id="e-nom" name="nominal" inputmode="numeric" required value="${e ? e.nominal : ''}"></div></div>
+      <div class="field"><label for="e-tgl">Tanggal</label><input class="input" type="date" id="e-tgl" name="tanggal" required value="${e ? e.tanggal : S.today}"></div>
+    </div>
+    <div class="field"><label for="e-ket">Keterangan</label><input class="input" id="e-ket" name="keterangan" value="${esc(e ? e.keterangan : '')}" placeholder="Opsional"></div>
+    <div class="sh-actions">${e ? `<button type="button" class="btn danger" data-act="hapusPengeluaran" data-id="${e.id}">${IC.trash}Hapus</button>` : `<button type="button" class="btn ghost" data-act="tutup">Batal</button>`}<button class="btn" type="submit">Simpan</button></div>
+  </form>`);
+}
+
+/* ---------- aksi klik ---------- */
+const ACT = {
+  tutup: () => closeSheet(),
+  kamar: d => openKamar(d.id),
+  tagihan: d => openTagihan(d.id),
+  bayar: d => openBayar(d.id),
+  kuitansi: d => openKuitansi(d.id),
+  cetak: () => window.print(),
+  bukaKos: d => { location.hash = '#/kos/' + d.id; },
+  tambahKos: () => formKos(),
+  ubahKos: d => formKos(kosById(d.id)),
+  tambahKamar: d => formKamar(d.id),
+  ubahKamar: d => formKamar(null, kamarById(d.id)),
+  isiKamar: d => formPenyewa(d.id),
+  ubahPenyewa: d => { const p = penyewaById(d.id); formPenyewa(p.kamarId, p); },
+  tambahPengeluaran: () => S.data.kos.length ? formPengeluaran() : toast('Tambahkan kos dulu', true),
+  ubahPengeluaran: d => formPengeluaran(S.data.pengeluaran.find(e => e.id === d.id)),
+  async hapusKos(d) {
+    const k = kosById(d.id);
+    if (!await konfirmasi('Hapus ' + esc(k.nama) + '?', 'Semua kamar beserta riwayat tagihan, pembayaran, dan pengeluaran kos ini ikut terhapus. Tindakan ini tidak bisa dibatalkan.', 'Hapus kos', true)) return;
+    await aksi('hapusKos', { id: d.id }, 'Kos dihapus'); location.hash = '#/kos';
+  },
+  async hapusKamar(d) {
+    const k = kamarById(d.id);
+    if (!await konfirmasi('Hapus kamar ' + esc(k.nomor) + '?', 'Kamar akan hilang dari papan kamar.', 'Hapus kamar', true)) return openKamar(d.id);
+    await aksi('hapusKamar', { id: d.id }, 'Kamar dihapus');
+  },
+  async keluar(d) {
+    const p = penyewaById(d.id);
+    const w = sheet(`${head(esc(p.nama) + ' keluar', 'Kamar akan kosong dan bisa diisi penyewa baru.')}
+      <form data-form="keluar"><input type="hidden" name="id" value="${p.id}">
+      <div class="field"><label for="k-tgl">Tanggal keluar</label><input class="input" type="date" id="k-tgl" name="tglKeluar" required value="${S.today}"></div>
+      <p class="small muted" style="margin:-4px 0 14px">Tagihan yang belum dibayar dengan jatuh tempo setelah tanggal ini dihapus. Tunggakan sebelumnya tetap tercatat.${p.deposit ? ' Deposit ' + C.rupiah(p.deposit) + ' jangan lupa dikembalikan atau diperhitungkan.' : ''}</p>
+      <div class="sh-actions"><button type="button" class="btn ghost" data-act="kamar" data-id="${p.kamarId}">Batal</button><button class="btn danger solid" type="submit">Konfirmasi keluar</button></div></form>`);
+  },
+  ubahTagihan(d) {
+    const t = tagihanById(d.id);
+    sheet(`${head('Ubah tagihan ' + C.fmtPeriode(t.periode), esc(t.penyewa ? t.penyewa.nama : ''))}
+      <form data-form="tagihan"><input type="hidden" name="id" value="${t.id}">
+      <div class="grid2"><div class="field"><label for="t-nom">Nominal</label><div class="prefix"><span>Rp</span><input class="input money" id="t-nom" name="nominal" inputmode="numeric" value="${t.nominal}"></div></div>
+      <div class="field"><label for="t-jt">Jatuh tempo</label><input class="input" type="date" id="t-jt" name="jatuhTempo" value="${t.jatuhTempo}" required></div></div>
+      <div class="field"><label for="t-cat">Catatan</label><input class="input" id="t-cat" name="catatan" value="${esc(t.catatan)}" placeholder="Misal: diskon karena renovasi"></div>
+      <p class="small muted" style="margin:-4px 0 14px">Isi nominal 0 untuk membebaskan sewa bulan ini.</p>
+      <div class="sh-actions"><button type="button" class="btn ghost" data-act="tagihan" data-id="${t.id}">Batal</button><button class="btn" type="submit">Simpan</button></div></form>`);
+  },
+  async hapusBayar(d) {
+    const b = S.data.pembayaran.find(x => x.id === d.id);
+    if (!await konfirmasi('Batalkan pembayaran?', `Pembayaran ${C.rupiah(b.nominal)} tanggal ${C.fmtTgl(b.tanggal)} akan dihapus dan tagihannya kembali belum lunas.`, 'Batalkan pembayaran', true)) return openKuitansi(d.id);
+    await aksi('hapusBayar', { id: d.id }, 'Pembayaran dibatalkan'); openTagihan(b.tagihanId);
+  },
+  async hapusPengeluaran(d) {
+    if (!await konfirmasi('Hapus pengeluaran ini?', 'Catatan pengeluaran akan dihapus dari laporan kas.', 'Hapus', true)) return;
+    await aksi('hapusPengeluaran', { id: d.id }, 'Pengeluaran dihapus');
+  },
+  geser(d) {
+    const k = d.t === 'kas' ? 'kasBulan' : 'bulan';
+    S[k] = C.addMonths(S[k], +d.d); render();
+  },
+  fStatus(d) { S.fStatus = d.v; render(); },
+  sisip(d) {
+    const ta = document.getElementById(d.t); const v = d.v;
+    const a = ta.selectionStart ?? ta.value.length, b = ta.selectionEnd ?? a;
+    ta.value = ta.value.slice(0, a) + v + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + v.length;
+  },
+  async tesWa() { busy(true); try { await api('tesWa'); toast('Pesan tes terkirim ke WhatsApp pemilik'); } catch (e) { toast(e.message, true); } finally { busy(false); } },
+  async kirimSekarang() {
+    busy(true);
+    try { const r = await api('kirimSekarang'); toast(r.catatan || `Terkirim ke ${r.penyewa} penyewa${r.gagal ? ', ' + r.gagal + ' gagal' : ''}${r.pemilik ? ', ringkasan ke pemilik' : ''}`, !!r.catatan); }
+    catch (e) { toast(e.message, true); } finally { busy(false); }
+  },
+  async resetDemo() {
+    if (!await konfirmasi('Kembalikan data contoh?', 'Semua perubahan di mode contoh akan dihapus dan diganti data contoh 6 kos.', 'Kembalikan', true)) return;
+    store.del(DEMO_KEY); demoStore = null; S.bulan = S.kasBulan = null; await muat(); toast('Data contoh dikembalikan');
+  },
+  keluarApp() { store.del('kosPin'); S.pin = ''; S.data = null; tampilLogin(); }
+};
+
+/* ---------- form submit ---------- */
+const FORM = {
+  async kos(v) { const r = await aksi('saveKos', { id: v.id, nama: v.nama, alamat: v.alamat, catatan: v.catatan, jumlahKamar: v.jumlahKamar, awalan: v.awalan, hargaDefault: angka(v.hargaDefault) }, v.id ? 'Kos disimpan' : 'Kos ditambahkan'); closeSheet(); if (!v.id) location.hash = '#/kos/' + r.id; },
+  async kamar(v) { const r = await aksi('saveKamar', { id: v.id, kosId: v.kosId, nomor: v.nomor, harga: angka(v.harga), fasilitas: v.fasilitas }, v.id ? 'Kamar disimpan' : 'Kamar ditambahkan'); openKamar(r.id); },
+  async penyewa(v) {
+    await aksi('savePenyewa', { id: v.id, kamarId: v.kamarId, nama: v.nama, wa: v.wa, tglMasuk: v.tglMasuk, hariTempo: v.hariTempo, harga: angka(v.harga), deposit: angka(v.deposit), catatan: v.catatan }, v.id ? 'Data penyewa disimpan' : 'Penyewa ditambahkan');
+    openKamar(v.kamarId);
+  },
+  async keluar(v) { const p = penyewaById(v.id); const r = await aksi('keluarPenyewa', v, 'Penyewa sudah keluar'); openKamar(p.kamarId); },
+  async bayar(v) {
+    const b = await aksi('bayar', { tagihanId: v.tagihanId, nominal: angka(v.nominal), tanggal: v.tanggal, metode: v.metode, catatan: v.catatan }, 'Pembayaran tersimpan');
+    openKuitansi(b.id);
+  },
+  async tagihan(v) { await aksi('ubahTagihan', { id: v.id, nominal: angka(v.nominal), jatuhTempo: v.jatuhTempo, catatan: v.catatan }, 'Tagihan diubah'); openTagihan(v.id); },
+  async pengeluaran(v) { await aksi('savePengeluaran', { id: v.id, kosId: v.kosId, kategori: v.kategori, nominal: angka(v.nominal), tanggal: v.tanggal, keterangan: v.keterangan }, 'Pengeluaran tersimpan'); S.kasBulan = C.periodeOf(v.tanggal); closeSheet(); if (route().page !== 'kas') location.hash = '#/kas'; else render(); },
+  async settings(v, f) {
+    v.kirimPenyewa = f.kirimPenyewa.checked ? 'ya' : 'tidak';
+    v.kirimPemilik = f.kirimPemilik.checked ? 'ya' : 'tidak';
+    await aksi('saveSettings', v, 'Pengaturan disimpan');
+    if (v.pinBaru) { S.pin = v.pinBaru; store.set('kosPin', v.pinBaru); }
+  }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.closest('[disabled]')) return;
+  const fn = ACT[el.dataset.act];
+  if (!fn) return;
+  e.preventDefault();
+  Promise.resolve(fn(el.dataset, el)).catch(() => { });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && sheetEl) closeSheet();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button][data-act]')) { e.preventDefault(); e.target.click(); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target, h = FORM[f.dataset.form];
+  if (!h) return;
+  e.preventDefault();
+  Promise.resolve(h(Object.fromEntries(new FormData(f)), f)).catch(() => { });
+});
+document.addEventListener('change', e => {
+  const el = e.target.closest('[data-change]');
+  if (el && el.dataset.change === 'fKos') { S.fKos = el.value; render(); }
+});
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('money')) {
+    const el = e.target, before = el.value.length, pos = el.selectionStart;
+    el.value = fmtAngka(angka(el.value));
+    const p = Math.max(0, pos + el.value.length - before); el.setSelectionRange(p, p);
+  }
+});
+window.addEventListener('hashchange', () => { closeSheet(true); render(); });
+
+/* ---------- login ---------- */
+function tampilLogin(err) {
+  $('#root').innerHTML = `<div class="login"><form class="panel" id="loginForm">
+    <span class="brand-mark" style="display:block"></span>
+    <h1>Pembukuan Kos</h1><p class="muted" style="margin:0 0 20px">Masukkan PIN untuk membuka aplikasi.</p>
+    <div class="field"><label for="pin" class="sr">PIN</label><input class="input pin" id="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required autofocus></div>
+    <p class="small" id="loginErr" style="color:var(--telat);min-height:20px;margin:-6px 0 10px">${err ? esc(err) : ''}</p>
+    <button class="btn block" type="submit">Masuk</button>
+  </form></div>`;
+  $('#loginForm').addEventListener('submit', async e => {
+    e.preventDefault(); e.stopPropagation();
+    S.pin = $('#pin').value.trim();
+    busy(true);
+    try { await api('login'); store.set('kosPin', S.pin); $('#root').innerHTML = ''; await muat(); }
+    catch (er) { $('#loginErr').textContent = er.message; S.pin = ''; }
+    finally { busy(false); }
+  });
+}
+
+if (DEMO || S.pin) muat(); else tampilLogin();
+</script>
+</body>
+</html>

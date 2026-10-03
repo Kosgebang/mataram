@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E5C58">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kos">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Pembukuan Kos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -305,6 +312,20 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 .toast{pointer-events:none;position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-20px);background:var(--ink);color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:70;opacity:0;transition:.2s;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.18)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:var(--telat)}
+.pasang{display:flex;align-items:center;gap:14px;padding:14px 16px;margin-top:16px;background:var(--teal);color:#fff;border-radius:var(--r-lg)}
+.pasang img{width:44px;height:44px;border-radius:11px;flex:none;border:1.5px solid rgba(255,255,255,.35)}
+.pasang div{flex:1;min-width:0}
+.pasang b{display:block;font-size:15px}
+.pasang span{font-size:13px;opacity:.85}
+.pasang .btn{background:#fff;color:var(--teal-2)}
+.pasang .x{background:transparent;border:0;color:#fff;opacity:.7;cursor:pointer;padding:6px;margin-right:-6px;display:flex}
+.pasang .x svg{width:18px;height:18px}
+@media (max-width:420px){.pasang span{display:none}}
+.steps{margin:0 0 16px;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--teal-soft);color:var(--teal-2);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.steps svg{width:18px;height:18px;vertical-align:-3px;color:#1A73E8}
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .login .panel{width:100%;max-width:380px;padding:28px 24px}
 .login h1{font-size:24px;margin:16px 0 4px}
@@ -817,7 +838,10 @@ const IC = {
   wa: I('<path d="M20 11.6a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.6z"/><path d="M9 9.5c0 2.5 2 4.6 4.6 4.6l1-1.1 1.6.8-.4 1.3"/>'),
   keluar: I('<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/>'),
   user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
-  send: I('<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>')
+  send: I('<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>'),
+  share: I('<path d="M12 3v12M8 7l4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/>'),
+  unduh: I('<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'),
+  tambah: I('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>')
 };
 
 /* ---------- state ---------- */
@@ -1046,6 +1070,43 @@ function monthSw(target, per) {
   return `<div class="monthsw"><button data-act="geser" data-t="${target}" data-d="-1" aria-label="Bulan sebelumnya">${IC.left}</button><b>${C.fmtPeriode(per)}</b><button data-act="geser" data-t="${target}" data-d="1" aria-label="Bulan berikutnya">${IC.right}</button></div>`;
 }
 
+/* ---------- pasang di HP (PWA) ---------- */
+let installEvt = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const bisaPasang = () => !isStandalone() && (!!installEvt || isIOS);
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (S.data) render(); });
+window.addEventListener('appinstalled', () => { installEvt = null; if (S.data) render(); toast('Aplikasi terpasang di HP'); });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => { }));
+}
+async function pasangApp() {
+  if (installEvt) {
+    installEvt.prompt();
+    const r = await installEvt.userChoice.catch(() => ({}));
+    if (r.outcome === 'accepted') installEvt = null;
+    render(); return;
+  }
+  if (isIOS) {
+    sheet(`${head('Pasang di iPhone', 'Aplikasi akan muncul di layar utama seperti aplikasi biasa.')}
+      <ol class="steps">
+        <li><span>Buka halaman ini di <b>Safari</b>.</span></li>
+        <li><span>Ketuk tombol <b>Bagikan</b> ${IC.share} di bagian bawah layar (di iPad: kanan atas).</span></li>
+        <li><span>Geser ke bawah, pilih <b>Tambah ke Layar Utama</b> ${IC.tambah}.</span></li>
+        <li><span>Ketuk <b>Tambah</b> di pojok kanan atas.</span></li>
+      </ol>
+      <button class="btn block" data-act="tutup">Mengerti</button>`);
+    return;
+  }
+  sheet(`${head('Pasang di HP')}<p class="muted" style="margin:0 0 16px">Buka halaman ini di <b>Chrome</b>, ketuk menu titik tiga di kanan atas, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</p><button class="btn block" data-act="tutup">Mengerti</button>`);
+}
+function kartuPasang() {
+  if (!bisaPasang() || store.get('kosTutupPasang')) return '';
+  return `<div class="pasang"><img src="icons/icon-192.png" alt=""><div><b>Pasang di HP</b><span>Buka langsung dari layar utama, tanpa browser.</span></div>
+    <button class="btn sm" data-act="pasang">${IC.unduh}Pasang</button>
+    <button class="x" data-act="tutupPasang" aria-label="Sembunyikan">${IC.x}</button></div>`;
+}
+
 /* ---------- shell ---------- */
 const NAV = [['beranda', 'Beranda', IC.home], ['kos', 'Kos', IC.kos], ['tagihan', 'Tagihan', IC.tagihan], ['kas', 'Kas', IC.kas], ['atur', 'Pengaturan', IC.atur]];
 function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { page: h[0] || 'beranda', id: h[1] || '' }; }
@@ -1111,6 +1172,7 @@ function vBeranda() {
     <div class="datel">${C.fmtHari(S.today)}</div>
     <h1>${judul}</h1>
   </section>
+  ${kartuPasang()}
   ${S.data.kos.length ? `
   <div class="panel pad meter">
     <div class="meter-top"><div><div class="muted small" style="font-weight:600">Sewa ${C.fmtPeriode(per)} terkumpul</div><div class="meter-big">${C.rupiah(masuk)}</div></div>
@@ -1256,6 +1318,10 @@ function vAtur() {
       <h2>Usaha</h2><p class="desc">Nama ini muncul di aplikasi dan kuitansi.</p>
       <div class="field"><label for="f-nama">Nama usaha</label><input class="input" id="f-nama" name="namaUsaha" value="${esc(s.namaUsaha)}" required></div>
       ${DEMO ? '' : `<div class="field"><label for="f-pin">PIN baru</label><input class="input" id="f-pin" name="pinBaru" inputmode="numeric" pattern="[0-9]{4,8}" placeholder="Kosongkan kalau tidak diganti" autocomplete="new-password"><span class="help">4 sampai 8 angka. Dipakai untuk masuk ke aplikasi.</span></div>`}
+      <div class="divider"></div>
+      <h2>Aplikasi di HP</h2>
+      ${isStandalone() ? '<p class="desc" style="margin-bottom:0">Sudah terpasang dan sedang dibuka sebagai aplikasi.</p>' :
+      `<p class="desc">Pasang supaya bisa dibuka dari layar utama HP seperti aplikasi biasa.</p><button type="button" class="btn ghost sm" data-act="pasang">${IC.unduh}${isIOS ? 'Cara pasang di iPhone' : 'Pasang aplikasi'}</button>`}
       <div class="divider"></div>
       <h2>Pengingat WhatsApp otomatis</h2><p class="desc">Dikirim tiap pagi jam 08.00 WITA lewat Fonnte. Dengan Fonnte, tombol WhatsApp di tagihan juga langsung mengirim pesan tanpa membuka WhatsApp.</p>
       ${s.adaToken ? '' : `<div class="note" style="margin-bottom:14px"><b>Cara menghubungkan:</b> daftar di fonnte.com, buka menu Device, tambah nomor WhatsApp pengirim lalu scan QR dari HP, kemudian salin Token dan tempel di bawah.</div>`}
@@ -1522,6 +1588,8 @@ const ACT = {
   tagihan: d => openTagihan(d.id),
   bayar: d => openBayar(d.id),
   kuitansi: d => openKuitansi(d.id),
+  pasang: () => pasangApp(),
+  tutupPasang() { store.set('kosTutupPasang', '1'); render(); },
   kirimTagihan: d => openKirim('tagihan', d.id),
   kirimKuitansi: d => openKirim('kuitansi', d.id),
   bukaWa(d) {

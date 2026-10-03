@@ -103,28 +103,52 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 @media (min-width:900px){.pad{padding:20px}}
 
 /* ---------- pintu kamar (elemen khas) ---------- */
-.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
-.board.lg{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:9px}
-.door{position:relative;aspect-ratio:3/4;border-radius:10px 10px 3px 3px;border:1.6px solid var(--line-2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:750;font-size:12.5px;color:var(--ink);cursor:pointer;padding:0;min-width:0;transition:transform .12s}
-.board.lg .door{font-size:15px;border-radius:13px 13px 4px 4px}
-.door::after{content:none}
-.board.lg .door::after{content:'';position:absolute;right:6px;top:calc(50% - 5px);width:3px;height:10px;border-radius:2px;background:currentColor;opacity:.35}
-.door:hover{transform:translateY(-2px)}
-.door.belum{border-color:#8FB3AE}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:7px}
+.board.lg{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.door{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;min-width:0;min-height:62px;padding:8px 9px 9px;border-radius:12px 12px 5px 5px;border:1.6px solid;cursor:pointer;font:inherit;color:var(--ink);transition:transform .12s,box-shadow .12s}
+.door:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(22,48,45,.13)}
+.d-no{font-weight:800;font-size:14px;letter-spacing:-.01em;line-height:1.2;padding-right:16px}
+.d-nama{font-size:11px;font-weight:650;line-height:1.25;width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.d-ic{position:absolute;top:8px;right:7px;display:flex;opacity:.75}
+.d-ic svg{width:14px;height:14px}
+.d-st{display:none}
+.board.lg .door{min-height:116px;padding:12px 12px 11px;border-radius:16px 16px 6px 6px;gap:3px}
+.board.lg .d-no{font-size:21px}
+.board.lg .d-nama{font-size:13.5px;font-weight:700;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.board.lg .d-ic{top:13px;right:11px}
+.board.lg .d-ic svg{width:18px;height:18px}
+.board.lg .d-st{display:inline-block;margin-top:auto;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.75);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.door.belum{background:#E4EFED;border-color:#5E9A94;color:#123F3B}
 .door.lunas{background:var(--lunas-soft);border-color:var(--lunas);color:var(--lunas-ink)}
 .door.dekat{background:var(--dekat-soft);border-color:var(--dekat);color:var(--dekat-ink)}
 .door.telat{background:var(--telat);border-color:var(--telat);color:#fff}
-.door.kosong{background:transparent;border-style:dashed;border-color:#A9B8B5;color:var(--ink-3)}
-.door.kosong::after{display:none}
-.door.sm{width:38px;flex:none;font-size:12.5px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-top:12px}
+.door.telat .d-st{background:rgba(255,255,255,.22)}
+.door.belum,.door.lunas,.door.dekat,.door.telat{box-shadow:0 1px 2px rgba(22,48,45,.10)}
+.door.kosong{background:repeating-linear-gradient(135deg,#F5F8F7 0 6px,#E8EEEC 6px 12px);border-style:dashed;border-color:#9DAFAB;color:#677A76}
+.door.kosong .d-nama{font-weight:600}
+.door.kosong .d-st{background:#fff;color:var(--teal-2)}
+.door.sm{width:38px;min-height:0;aspect-ratio:3/4;flex:none;padding:0;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;border-radius:9px 9px 3px 3px;box-shadow:none}
+.door.sm:hover{box-shadow:none}
+@media (max-width:560px){
+  .board.lg{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .board.lg .door{padding:10px 9px 9px;min-height:108px}
+  .board.lg .d-no{font-size:18px}
+  .board.lg .d-nama{font-size:12.5px}
+  .board.lg .d-ic{top:11px;right:8px}
+  .board.lg .d-st,.door.telat .d-st,.door.kosong .d-st{font-size:11.5px;padding:0;background:none;border-radius:0;overflow:visible;font-weight:800}
+}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-top:14px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:11px;height:14px;border-radius:4px 4px 1px 1px;border:1.5px solid;display:inline-block}
+.legend b{color:var(--ink);font-weight:700}
+.legend i{width:12px;height:15px;border-radius:4px 4px 1px 1px;border:1.5px solid;display:inline-block}
 .legend .l-lunas{background:var(--lunas-soft);border-color:var(--lunas)}
 .legend .l-dekat{background:var(--dekat-soft);border-color:var(--dekat)}
 .legend .l-telat{background:var(--telat);border-color:var(--telat)}
-.legend .l-belum{background:#fff;border-color:#8FB3AE}
-.legend .l-kosong{border-style:dashed;border-color:#A9B8B5}
+.legend .l-belum{background:#E4EFED;border-color:#5E9A94}
+.legend .l-kosong{border-style:dashed;border-color:#9DAFAB;background:repeating-linear-gradient(135deg,#F5F8F7 0 3px,#E3EAE8 3px 6px)}
+.occbar{height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.occbar i{display:block;height:100%;background:var(--teal)}
+.kchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 
 /* ---------- beranda ---------- */
 .hero{padding:6px 0 4px}
@@ -188,7 +212,8 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 .kos-card h2{font-size:17px}
 .kos-sub{font-size:13px;color:var(--ink-2);margin-top:2px}
 .kos-foot{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;gap:8px}
-.kos-foot b{color:var(--ink)}
+.kos-foot b{color:var(--ink);white-space:nowrap}
+.kos-card .occbar{margin-top:auto}
 .add-card{border:1.6px dashed var(--line-2);border-radius:var(--r-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:170px;background:transparent;cursor:pointer;color:var(--teal-2);font-weight:700}
 .add-card:hover{background:var(--surface)}
 .add-card svg{width:26px;height:26px}
@@ -828,6 +853,7 @@ const IC = {
   kas: I('<path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0 0 4h15v4M3 6v12a2 2 0 0 0 2 2h15v-4"/><path d="M15 12h6v4h-6a2 2 0 0 1 0-4z"/>'),
   atur: I('<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
   plus: I('<path d="M12 5v14M5 12h14"/>'),
+  orang: I('<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>'),
   left: I('<path d="m15 18-6-6 6-6"/>'),
   right: I('<path d="m9 18 6-6-6-6"/>'),
   x: I('<path d="M18 6 6 18M6 6l12 12"/>'),
@@ -1034,17 +1060,52 @@ const tagihanById = id => S.tg.find(t => t.id === id);
 const urutKamar = (a, b) => a.nomor.localeCompare(b.nomor, 'id', { numeric: true });
 const kamarKos = kosId => S.data.kamar.filter(k => k.kosId === kosId).sort(urutKamar);
 
-function doorHTML(k, cls = '') {
+const AWALAN_NAMA = ['lalu', 'baiq', 'i', 'ni', 'made', 'putu', 'ketut', 'komang', 'wayan', 'nyoman', 'kadek', 'gede', 'muhammad', 'muh', 'moh', 'm', 'nur', 'siti', 'dewa', 'ayu'];
+function namaPendek(n) {
+  const w = String(n || '').trim().split(/\s+/);
+  return w.length > 1 && AWALAN_NAMA.includes(w[0].toLowerCase().replace('.', '')) ? w[0] + ' ' + w[1] : w[0];
+}
+function labelKamar(st, km) {
+  if (st.status === 'kosong') return km ? C.rupiahSingkat(km.harga) : 'Kosong';
+  const t = st.tagihan;
+  if (!t) return 'Belum ada tagihan';
+  if (t.status === 'lunas') return 'Lunas';
+  if (t.hari < 0) return 'Telat ' + (-t.hari) + ' hr';
+  if (t.hari === 0) return 'Hari ini';
+  if (t.hari === 1) return 'Besok';
+  return 'Tgl ' + C.fmtTglPendek(t.jatuhTempo);
+}
+function doorHTML(k, lg) {
   const st = S.ks[k.id] || { status: 'kosong' };
-  const lbl = `Kamar ${k.nomor}, ${st.penyewa ? st.penyewa.nama + ', ' + STATUS_LABEL[st.status] : 'kosong'}`;
-  return `<button class="door ${st.status} ${cls}" data-act="kamar" data-id="${k.id}" aria-label="${esc(lbl)}" title="${esc(lbl)}">${esc(k.nomor)}</button>`;
+  const p = st.penyewa;
+  const lbl = `Kamar ${k.nomor}, ${p ? p.nama + ', ' + (st.tagihan ? teksTempo(st.tagihan) : STATUS_LABEL[st.status]) : 'kosong, ' + C.rupiah(k.harga) + ' per bulan'}`;
+  return `<button class="door ${st.status}" data-act="kamar" data-id="${k.id}" aria-label="${esc(lbl)}" title="${esc(lbl)}">
+    <span class="d-ic">${p ? IC.orang : IC.plus}</span>
+    <span class="d-no">${esc(k.nomor)}</span>
+    <span class="d-nama">${p ? esc(lg ? p.nama : namaPendek(p.nama)) : 'Kosong'}</span>
+    <span class="d-st">${esc(labelKamar(st, k))}</span>
+  </button>`;
 }
-function boardHTML(kosId, lg) {
-  const ks = kamarKos(kosId);
+const FILTER_KAMAR = {
+  semua: () => true,
+  terisi: st => st.status !== 'kosong',
+  kosong: st => st.status === 'kosong',
+  tagih: st => st.status === 'telat' || st.status === 'dekat'
+};
+function boardHTML(kosId, lg, filter) {
+  let ks = kamarKos(kosId);
   if (!ks.length) return `<p class="muted small" style="margin:0">Belum ada kamar.</p>`;
-  return `<div class="board ${lg ? 'lg' : ''}">${ks.map(k => doorHTML(k)).join('')}</div>`;
+  if (filter) ks = ks.filter(k => FILTER_KAMAR[filter](S.ks[k.id] || { status: 'kosong' }));
+  if (!ks.length) return `<p class="muted small" style="margin:0">Tidak ada kamar di filter ini.</p>`;
+  return `<div class="board ${lg ? 'lg' : ''}">${ks.map(k => doorHTML(k, lg)).join('')}</div>`;
 }
-const LEGEND = `<div class="legend"><span><i class="l-lunas"></i>Lunas</span><span><i class="l-belum"></i>Belum jatuh tempo</span><span><i class="l-dekat"></i>Segera jatuh tempo</span><span><i class="l-telat"></i>Telat</span><span><i class="l-kosong"></i>Kosong</span></div>`;
+function legendHTML(kamarList) {
+  const n = { lunas: 0, belum: 0, dekat: 0, telat: 0, kosong: 0 };
+  if (kamarList) kamarList.forEach(k => { const st = (S.ks[k.id] || { status: 'kosong' }).status; n[st]++; });
+  const c = k => kamarList ? ` <b>${n[k]}</b>` : '';
+  return `<div class="legend"><span><i class="l-lunas"></i>Lunas${c('lunas')}</span><span><i class="l-belum"></i>Belum jatuh tempo${c('belum')}</span><span><i class="l-dekat"></i>Segera jatuh tempo${c('dekat')}</span><span><i class="l-telat"></i>Telat${c('telat')}</span><span><i class="l-kosong"></i>Kosong${c('kosong')}</span></div>`;
+}
+const LEGEND = legendHTML();
 
 function rowTagihan(t, withBtns = true) {
   const k = t.kamar || {}, p = t.penyewa || {};
@@ -1187,7 +1248,7 @@ function vBeranda() {
     </section>
     <section class="sec">
       <div class="sechead"><h2>Papan kamar</h2><span class="hint">Ketuk kamar untuk detail</span></div>
-      ${S.data.kos.length ? `<div class="panel" style="overflow:hidden">${kosBoards}<div class="pad" style="padding-top:2px">${LEGEND}</div></div>` :
+      ${S.data.kos.length ? `<div class="panel" style="overflow:hidden">${kosBoards}<div class="pad" style="padding-top:2px">${legendHTML(S.data.kamar)}</div></div>` :
       `<button class="add-card" style="width:100%" data-act="tambahKos">${IC.plus}Tambah kos</button>`}
     </section>
   </div>`;
@@ -1208,19 +1269,23 @@ function vKos() {
     return `<article class="panel kos-card" data-act="bukaKos" data-id="${k.id}">
       <div><h2>${esc(k.nama)}</h2><div class="kos-sub">${esc(k.alamat || 'Alamat belum diisi')}</div></div>
       ${boardHTML(k.id)}
-      <div class="kos-foot"><span>${r.isi} dari ${r.ks.length} kamar terisi</span><span>Masuk bulan ini <b>${C.rupiahSingkat(r.masuk)}</b></span></div>
+      <div class="occbar" role="img" aria-label="${r.isi} dari ${r.ks.length} kamar terisi"><i style="width:${r.ks.length ? (r.isi / r.ks.length * 100).toFixed(1) : 0}%"></i></div>
+      <div class="kos-foot" style="border-top:0;padding-top:0"><span>${r.isi} dari ${r.ks.length} kamar terisi</span><span>Masuk bulan ini <b>${C.rupiahSingkat(r.masuk)}</b></span></div>
     </article>`;
   }).join('');
   return `<div class="pagehead"><div><h1>Kos-kosan</h1><p class="muted">${S.data.kos.length} kos, ${S.data.kamar.length} kamar</p></div>
     <button class="btn" data-act="tambahKos">${IC.plus}Tambah kos</button></div>
     <div class="kos-grid">${cards}<button class="add-card" data-act="tambahKos">${IC.plus}Tambah kos baru</button></div>
-    ${S.data.kos.length ? LEGEND : ''}`;
+    ${S.data.kos.length ? legendHTML(S.data.kamar) : ''}`;
 }
 function vKosDetail(id) {
   const k = kosById(id);
   if (!k) return `<a class="back" href="#/kos">${IC.left}Kos</a><div class="empty"><b>Kos tidak ditemukan</b>Mungkin sudah dihapus.</div>`;
   const r = ringkasKos(id);
-  const rows = r.ks.map(km => {
+  const f = S.fKamar && S.fKamar.id === id ? S.fKamar.v : 'semua';
+  const nF = v => r.ks.filter(km => FILTER_KAMAR[v](S.ks[km.id] || { status: 'kosong' })).length;
+  const chip = (v, l) => `<button class="chip ${f === v ? 'on' : ''}" data-act="fKamar" data-id="${id}" data-v="${v}">${l}<small>${nF(v)}</small></button>`;
+  const rows = r.ks.filter(km => FILTER_KAMAR[f](S.ks[km.id] || { status: 'kosong' })).map(km => {
     const st = S.ks[km.id];
     const t = st.tagihan;
     return `<div class="row tap" data-act="kamar" data-id="${km.id}">
@@ -1234,10 +1299,10 @@ function vKosDetail(id) {
   <div class="pagehead"><div><h1>${esc(k.nama)}</h1><p class="muted">${esc(k.alamat || 'Alamat belum diisi')}</p></div>
     <div class="btnrow"><button class="btn ghost sm" data-act="ubahKos" data-id="${k.id}">${IC.edit}Ubah</button><button class="btn sm" data-act="tambahKamar" data-id="${k.id}">${IC.plus}Tambah kamar</button></div></div>
   <div class="panel">
-    <div class="pad">${boardHTML(k.id, true)}${LEGEND}</div>
+    <div class="pad"><div class="kchips">${chip('semua', 'Semua')}${chip('terisi', 'Terisi')}${chip('kosong', 'Kosong')}${chip('tagih', 'Perlu ditagih')}</div>${boardHTML(k.id, true, f)}${legendHTML(r.ks)}</div>
     <div class="kv" style="border-top:1px solid var(--line);margin:0"><div><b>${r.isi}/${r.ks.length}</b><span>Kamar terisi</span></div><div><b>${C.rupiahSingkat(r.masuk)}</b><span>Masuk bulan ini</span></div><div><b class="${r.tunggak ? 'neg' : ''}">${C.rupiahSingkat(r.tunggak)}</b><span>Tunggakan</span></div></div>
   </div>
-  <section class="sec"><div class="sechead"><h2>Daftar kamar</h2></div><div class="list">${rows || '<div class="empty"><b>Belum ada kamar</b>Tambahkan kamar untuk kos ini.</div>'}</div></section>
+  <section class="sec"><div class="sechead"><h2>Daftar kamar</h2></div><div class="list">${rows || (r.ks.length ? '<div class="empty"><b>Tidak ada kamar di filter ini</b>Pilih filter lain di atas.</div>' : '<div class="empty"><b>Belum ada kamar</b>Tambahkan kamar untuk kos ini.</div>')}</div></section>
   <div style="margin-top:28px"><button class="btn danger sm" data-act="hapusKos" data-id="${k.id}">${IC.trash}Hapus kos ini</button></div>`;
 }
 
@@ -1648,6 +1713,7 @@ const ACT = {
     S[k] = C.addMonths(S[k], +d.d); render();
   },
   fStatus(d) { S.fStatus = d.v; render(); },
+  fKamar(d) { S.fKamar = { id: d.id, v: d.v }; render(); },
   sisip(d) {
     const ta = document.getElementById(d.t); const v = d.v;
     const a = ta.selectionStart ?? ta.value.length, b = ta.selectionEnd ?? a;

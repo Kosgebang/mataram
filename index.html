@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E5C58">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icons/favicon-64.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kos">
+<meta name="apple-mobile-web-app-title" content="Kos Budi">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Pembukuan Kos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,8 +42,7 @@ a{color:var(--teal)}
 .main{padding:16px 16px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));max-width:1080px;margin:0 auto}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;letter-spacing:-.01em}
-.brand-mark{width:30px;height:34px;border-radius:9px 9px 3px 3px;background:var(--teal);position:relative;flex:none}
-.brand-mark::after{content:'';position:absolute;right:7px;top:17px;width:4px;height:4px;border-radius:50%;background:#fff}
+.brand-mark{width:38px;height:38px;border-radius:10px;flex:none;display:block;object-fit:cover;box-shadow:0 1px 3px rgba(22,48,45,.18)}
 .bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
 .navlink{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;text-decoration:none;color:var(--ink-3);font-size:11.5px;font-weight:600;border-radius:10px}
 .navlink svg{width:23px;height:23px}
@@ -1102,7 +1101,7 @@ async function pasangApp() {
 }
 function kartuPasang() {
   if (!bisaPasang() || store.get('kosTutupPasang')) return '';
-  return `<div class="pasang"><img src="icons/icon-192.png" alt=""><div><b>Pasang di HP</b><span>Buka langsung dari layar utama, tanpa browser.</span></div>
+  return `<div class="pasang"><img src="icon-192.png" alt=""><div><b>Pasang aplikasi</b><span>Buka langsung dari layar utama atau desktop, tanpa browser.</span></div>
     <button class="btn sm" data-act="pasang">${IC.unduh}Pasang</button>
     <button class="x" data-act="tutupPasang" aria-label="Sembunyikan">${IC.x}</button></div>`;
 }
@@ -1121,10 +1120,10 @@ function render() {
     root.innerHTML = `${DEMO ? `<div class="demo-bar"><b>Mode contoh.</b> Data ini hanya tersimpan di perangkat ini. Isi API_URL di index.html untuk menyimpan ke Google Sheets.</div>` : ''}
     <div class="app"><nav class="side" aria-label="Menu"></nav><main class="main" id="main"></main></div><nav class="bottomnav" aria-label="Menu"></nav>`;
   }
-  root.querySelector('.side').innerHTML = `<div class="brand"><span class="brand-mark"></span>${nm}</div>${nav('s')}<div class="side-foot">${DEMO ? 'Mode contoh' : 'Tersambung ke Google Sheets'}</div>`;
+  root.querySelector('.side').innerHTML = `<div class="brand"><img class="brand-mark" src="icon-192.png" alt="">${nm}</div>${nav('s')}<div class="side-foot">${bisaPasang() ? `<button class="btn soft sm block" data-act="pasang" style="margin-bottom:12px">${IC.unduh}Pasang aplikasi</button>` : ''}${DEMO ? 'Mode contoh' : 'Tersambung ke Google Sheets'}</div>`;
   root.querySelector('.bottomnav').innerHTML = nav('b');
   const views = { beranda: vBeranda, kos: r.id ? () => vKosDetail(r.id) : vKos, tagihan: vTagihan, kas: vKas, atur: vAtur };
-  const top = `<div class="topbar"><div class="brand"><span class="brand-mark"></span>${nm}</div></div>`;
+  const top = `<div class="topbar"><div class="brand"><img class="brand-mark" src="icon-192.png" alt="">${nm}</div></div>`;
   const main = $('#main');
   const y = window.scrollY, same = main.dataset.r === location.hash;
   main.innerHTML = top + (views[r.page] || vBeranda)();
@@ -1736,7 +1735,7 @@ window.addEventListener('hashchange', () => { closeSheet(true); render(); });
 /* ---------- login ---------- */
 function tampilLogin(err) {
   $('#root').innerHTML = `<div class="login"><form class="panel" id="loginForm">
-    <span class="brand-mark" style="display:block"></span>
+    <img class="brand-mark" src="icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px">
     <h1>Pembukuan Kos</h1><p class="muted" style="margin:0 0 20px">Masukkan PIN untuk membuka aplikasi.</p>
     <div class="field"><label for="pin" class="sr">PIN</label><input class="input pin" id="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required autofocus></div>
     <p class="small" id="loginErr" style="color:var(--telat);min-height:20px;margin:-6px 0 10px">${err ? esc(err) : ''}</p>

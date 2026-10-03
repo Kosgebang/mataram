@@ -841,7 +841,7 @@ var KosCore = (function () {
       var row = bersihkan('Profil', {
         id: d.kosId, tipe: d.tipe || '', deskripsi: String(d.deskripsi || '').slice(0, 3000),
         fasilitas: String(d.fasilitas || '').slice(0, 2000), peraturan: String(d.peraturan || '').slice(0, 2000),
-        maps: String(d.maps || '').slice(0, 500), tampil: d.tampil === 'tidak' ? 'tidak' : 'ya', diubah: today
+        maps: String(d.maps || '').slice(0, 500), tampil: ['tidak', 'link'].indexOf(d.tampil) >= 0 ? d.tampil : 'ya', diubah: today
       });
       if (db.all('Profil').some(function (p) { return p.id === d.kosId; })) db.update('Profil', d.kosId, row);
       else db.insert('Profil', row);
@@ -894,6 +894,7 @@ var KosCore = (function () {
         var harga = km.map(function (x) { return Number(x.harga) || 0; }).filter(function (x) { return x > 0; });
         return {
           id: k.id, nama: k.nama, alamat: k.alamat, tipe: pr.tipe || '', deskripsi: pr.deskripsi || '',
+          daftar: pr.tampil !== 'link', // false = hanya bisa dibuka lewat link khusus kos ini
           fasilitas: pecah(pr.fasilitas), peraturan: pecah(pr.peraturan), maps: pr.maps || '',
           totalKamar: km.length, kosong: kosong.length,
           hargaMin: harga.length ? Math.min.apply(null, harga) : 0, hargaMax: harga.length ? Math.max.apply(null, harga) : 0,
@@ -1424,6 +1425,8 @@ function vKosDetail(id) {
 
 /* ---------- website: profil & foto ---------- */
 const urlWebsite = () => new URL('profil.html', location.href.split('#')[0]).href;
+const urlKos = id => urlWebsite() + '?kos=' + encodeURIComponent(id);
+const TAMPIL_LABEL = { ya: 'Tampil di website', link: 'Hanya lewat link sendiri', tidak: 'Disembunyikan' };
 const profilKos = id => S.data.profil.find(p => p.id === id) || { id, tipe: '', deskripsi: '', fasilitas: '', peraturan: '', maps: '', tampil: 'ya' };
 const fotoKos = id => S.data.foto.filter(f => f.kosId === id);
 function fotoImg(f, attr = '') {
@@ -1431,11 +1434,11 @@ function fotoImg(f, attr = '') {
   return `<img src="${esc(f.url)}" alt="${esc(f.keterangan || '')}" loading="lazy" referrerpolicy="no-referrer"${cad} ${attr}>`;
 }
 function websiteKosHTML(k) {
-  const pr = profilKos(k.id), fotos = fotoKos(k.id), tampil = pr.tampil !== 'tidak';
+  const pr = profilKos(k.id), fotos = fotoKos(k.id), tampil = pr.tampil || 'ya';
   const fas = C.pecah(pr.fasilitas);
   return `<section class="sec">
     <div class="web-head"><div><h2>Profil di website</h2><p class="small muted" style="margin:2px 0 0">Foto dan info ini dilihat calon penyewa.</p></div>
-      <span class="pill ${tampil ? 'lunas' : 'kosong'}">${tampil ? 'Tampil di website' : 'Disembunyikan'}</span></div>
+      <span class="pill ${tampil === 'ya' ? 'lunas' : tampil === 'link' ? 'dekat' : 'kosong'}">${TAMPIL_LABEL[tampil] || TAMPIL_LABEL.ya}</span></div>
     <div class="panel pad">
       <div class="foto-grid">
         ${fotos.map((f, i) => `<button class="foto" data-act="foto" data-id="${f.id}" aria-label="Foto ${i + 1}${f.keterangan ? ', ' + esc(f.keterangan) : ''}">${fotoImg(f)}${i === 0 ? '<span class="badge">Sampul</span>' : ''}${f.keterangan ? `<span class="cap">${esc(f.keterangan)}</span>` : ''}</button>`).join('')}
@@ -1448,7 +1451,12 @@ function websiteKosHTML(k) {
         <dt>Fasilitas</dt><dd>${fas.length ? `<div class="chips-s">${fas.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : '<span class="muted">Belum diisi</span>'}</dd>
         <dt>Lokasi</dt><dd>${pr.maps ? `<a href="${esc(pr.maps)}" target="_blank" rel="noopener">Buka Google Maps</a>` : '<span class="muted">Belum diisi</span>'}</dd>
       </dl>
-      <div class="btnrow" style="margin-top:14px"><button class="btn ghost sm" data-act="ubahProfil" data-id="${k.id}">${IC.edit}Ubah profil</button><a class="btn soft sm" href="${esc(urlWebsite())}#kos/${k.id}" target="_blank" rel="noopener">${IC.globe}Lihat di website</a></div>
+      <div class="btnrow" style="margin-top:14px"><button class="btn ghost sm" data-act="ubahProfil" data-id="${k.id}">${IC.edit}Ubah profil</button></div>
+      <div class="divider"></div>
+      <div class="flabel" style="margin-bottom:4px">Link khusus kos ini</div>
+      <p class="small muted" style="margin:0 0 10px">${tampil === 'tidak' ? 'Kos ini disembunyikan, jadi link ini belum bisa dibuka. Ubah lewat Ubah profil.' : 'Hanya menampilkan ' + esc(k.nama) + ', tanpa kos lain. Cocok untuk iklan atau status WA khusus lokasi ini.'}</p>
+      <div class="linkbox"><code>${esc(urlKos(k.id))}</code><button type="button" class="icon-btn" data-act="salinLink" data-url="${esc(urlKos(k.id))}" aria-label="Salin link kos ini" title="Salin link">${IC.salin}</button></div>
+      <div class="btnrow"><a class="btn soft sm" href="${esc(urlKos(k.id))}" target="_blank" rel="noopener">${IC.globe}Buka</a><a class="btn ghost sm" href="https://wa.me/?text=${encodeURIComponent('Info kamar ' + k.nama + ': ' + urlKos(k.id))}" target="_blank" rel="noopener">${IC.wa}Bagikan ke WA</a></div>
     </div>
   </section>`;
 }
@@ -1499,8 +1507,9 @@ function formProfil(kosId) {
   const k = kosById(kosId), pr = profilKos(kosId);
   sheet(`${head('Profil ' + esc(k.nama), 'Ditampilkan di website untuk calon penyewa.')}
   <form data-form="profil"><input type="hidden" name="kosId" value="${kosId}">
-    <label class="switch" style="padding-top:0"><span><b>Tampilkan di website</b><br><span class="small muted">Matikan untuk menyembunyikan kos ini</span></span><input type="checkbox" name="tampil" ${pr.tampil !== 'tidak' ? 'checked' : ''}></label>
-    <div class="field" style="margin-top:14px"><span class="flabel">Tipe kos</span><div class="seg">${['Campur', 'Putra', 'Putri', 'Pasutri'].map(t => `<label><input type="radio" name="tipe" value="${t}" ${pr.tipe === t ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div></div>
+    <div class="field"><span class="flabel">Tampil di website</span>
+      <div class="seg" style="flex-direction:column">${[['ya', 'Tampil di semua', 'Muncul di website utama dan lewat link sendiri'], ['link', 'Hanya lewat link sendiri', 'Tidak muncul di daftar website utama'], ['tidak', 'Sembunyikan', 'Tidak bisa dibuka sama sekali']].map(([v, l, h]) => `<label style="min-width:0"><input type="radio" name="tampil" value="${v}" ${(pr.tampil || 'ya') === v ? 'checked' : ''}><span style="text-align:left;padding:10px 14px">${l}<br><small style="font-weight:500;opacity:.75">${h}</small></span></label>`).join('')}</div></div>
+    <div class="field"><span class="flabel">Tipe kos</span><div class="seg">${['Campur', 'Putra', 'Putri', 'Pasutri'].map(t => `<label><input type="radio" name="tipe" value="${t}" ${pr.tipe === t ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div></div>
     <div class="field"><label for="pr-desk">Deskripsi singkat</label><textarea class="textarea" id="pr-desk" name="deskripsi" placeholder="Misal: Kos bersih dan tenang, 5 menit ke kampus Unram, dekat warung makan dan minimarket.">${esc(pr.deskripsi)}</textarea></div>
     <div class="field"><label for="pr-fas">Fasilitas</label><textarea class="textarea" id="pr-fas" name="fasilitas" placeholder="Satu fasilitas per baris&#10;WiFi&#10;Kamar mandi dalam&#10;Kasur dan lemari&#10;Parkir motor">${esc(pr.fasilitas)}</textarea><span class="help">Satu per baris. Tampil sebagai label di website.</span></div>
     <div class="field"><label for="pr-per">Peraturan</label><textarea class="textarea" id="pr-per" name="peraturan" placeholder="Satu aturan per baris&#10;Tamu sampai jam 21.00&#10;Dilarang merokok di kamar">${esc(pr.peraturan)}</textarea></div>
@@ -1939,8 +1948,8 @@ const ACT = {
     if (!await konfirmasi('Hapus foto ini?', 'Foto akan hilang dari website dan dipindah ke sampah Google Drive.', 'Hapus foto', true)) return openFoto(d.id);
     await aksi('hapusFoto', { id: d.id }, 'Foto dihapus');
   },
-  async salinLink() {
-    try { await navigator.clipboard.writeText(urlWebsite()); toast('Link website disalin'); }
+  async salinLink(d) {
+    try { await navigator.clipboard.writeText(d.url || urlWebsite()); toast('Link disalin'); }
     catch (e) { toast('Tidak bisa menyalin otomatis. Tekan lama link untuk menyalin.', true); }
   },
   sisip(d) {
@@ -1987,8 +1996,7 @@ const FORM = {
     } finally { busy(false); }
   },
   async foto(v) { await aksi('ubahFoto', v, 'Keterangan disimpan'); closeSheet(); },
-  async profil(v, f) {
-    v.tampil = f.tampil.checked ? 'ya' : 'tidak';
+  async profil(v) {
     await aksi('saveProfil', v, 'Profil disimpan'); closeSheet();
   },
   async tagihan(v) { await aksi('ubahTagihan', { id: v.id, nominal: angka(v.nominal), jatuhTempo: v.jatuhTempo, catatan: v.catatan }, 'Tagihan diubah'); openTagihan(v.id); },

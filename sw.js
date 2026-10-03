@@ -3,11 +3,16 @@
    - index.html selalu dicek ke server dulu, jadi versi baru langsung terpakai.
    - Data (Google Apps Script) TIDAK pernah disimpan di cache: selalu data terbaru.
    Naikkan VERSI setiap kali mengganti ikon atau manifest. */
-const VERSI = 'kos-v1';
-const SHELL = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-64.png'];
+const VERSI = 'kos-v3';
+const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-64.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSI).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // simpan satu per satu: kalau ada file yang belum di-upload, yang lain tetap tersimpan
+  e.waitUntil(
+    caches.open(VERSI)
+      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => console.warn('[sw] gagal simpan', u)))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {

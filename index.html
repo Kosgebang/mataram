@@ -350,6 +350,23 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 .steps li:last-child{border-bottom:0}
 .steps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--teal-soft);color:var(--teal-2);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
 .steps svg{width:18px;height:18px;vertical-align:-3px;color:#1A73E8}
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.foto{position:relative;aspect-ratio:4/3;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2);padding:0;cursor:pointer;display:block}
+.foto img{width:100%;height:100%;object-fit:cover;display:block}
+.foto .badge{position:absolute;left:6px;top:6px;background:rgba(14,32,30,.82);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.foto .cap{position:absolute;left:0;right:0;bottom:0;padding:14px 8px 5px;font-size:11px;font-weight:600;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.foto.tambah{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.6px dashed var(--line-2);color:var(--teal-2);font-weight:700;font-size:13px;background:transparent}
+.foto.tambah svg{width:22px;height:22px}
+.foto.tambah:hover{background:var(--surface)}
+.foto-besar{width:100%;max-height:52vh;object-fit:contain;border-radius:12px;background:#0f1a19;margin-bottom:14px;display:block}
+.web-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ringkas{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:0}
+.ringkas dt{color:var(--ink-2)}
+.ringkas dd{margin:0;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.chips-s{display:flex;flex-wrap:wrap;gap:5px}
+.chips-s span{font-size:12.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:2px 9px}
+.linkbox{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:8px 8px 8px 12px;margin-bottom:12px}
+.linkbox code{flex:1;min-width:0;font-family:inherit;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .login .panel{width:100%;max-width:380px;padding:28px 24px}
 .login h1{font-size:24px;margin:16px 0 4px}
@@ -389,12 +406,17 @@ var KosCore = (function () {
     Tagihan: ['id', 'penyewaId', 'kamarId', 'kosId', 'periode', 'nominal', 'jatuhTempo', 'catatan', 'dibuat'],
     Pembayaran: ['id', 'tagihanId', 'penyewaId', 'kosId', 'tanggal', 'nominal', 'metode', 'catatan', 'dibuat'],
     Pengeluaran: ['id', 'kosId', 'tanggal', 'kategori', 'nominal', 'keterangan', 'dibuat'],
-    LogPengingat: ['tanggal', 'tagihanId', 'tujuan', 'jenis', 'status', 'pesan']
+    LogPengingat: ['tanggal', 'tagihanId', 'tujuan', 'jenis', 'status', 'pesan'],
+    Profil: ['id', 'tipe', 'deskripsi', 'fasilitas', 'peraturan', 'maps', 'tampil', 'diubah'],
+    Foto: ['id', 'kosId', 'fileId', 'url', 'keterangan', 'urutan', 'dibuat']
   };
-  var ANGKA = ['harga', 'hariTempo', 'deposit', 'nominal'];
+  var ANGKA = ['harga', 'hariTempo', 'deposit', 'nominal', 'urutan'];
 
   var DEFAULT_SETTINGS = {
     namaUsaha: 'Kos Saya',
+    tagline: 'Kos nyaman, aman, dan terjangkau',
+    tentang: '',
+    waPublik: '',
     pin: '1234',
     fonnteToken: '',
     waPemilik: '',
@@ -629,10 +651,22 @@ var KosCore = (function () {
   /* ---------- operasi (API) ---------- */
   function publicSettings(s) {
     var o = {};
-    for (var k in s) if (k !== 'pin' && k !== 'fonnteToken') o[k] = s[k];
+    for (var k in s) if (k !== 'pin' && k !== 'fonnteToken' && k !== 'folderFoto') o[k] = s[k];
     o.adaToken = !!s.fonnteToken;
     o.tokenTersamar = s.fonnteToken ? String(s.fonnteToken).slice(0, 3) + '••••' + String(s.fonnteToken).slice(-3) : '';
     return o;
+  }
+
+  function urutFoto(list) {
+    return list.slice().sort(function (a, b) { return (Number(a.urutan) - Number(b.urutan)) || String(a.dibuat).localeCompare(String(b.dibuat)); });
+  }
+  function pecah(teks) {
+    return String(teks || '').split(/\r?\n|,|;/).map(function (x) { return x.replace(/^[\s\-•*]+/, '').trim(); }).filter(function (x) { return x; });
+  }
+  function urutNomor(a, b) {
+    var na = parseInt(String(a.nomor).replace(/\D/g, ''), 10), nb = parseInt(String(b.nomor).replace(/\D/g, ''), 10);
+    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+    return String(a.nomor) < String(b.nomor) ? -1 : String(a.nomor) > String(b.nomor) ? 1 : 0;
   }
 
   function cari(db, nama, id) {
@@ -647,6 +681,7 @@ var KosCore = (function () {
       return {
         kos: db.all('Kos'), kamar: db.all('Kamar'), penyewa: db.all('Penyewa'),
         tagihan: db.all('Tagihan'), pembayaran: db.all('Pembayaran'), pengeluaran: db.all('Pengeluaran'),
+        profil: db.all('Profil'), foto: urutFoto(db.all('Foto')),
         log: db.all('LogPengingat').slice(-400).map(function (l) { return { tanggal: l.tanggal, tagihanId: l.tagihanId, jenis: l.jenis, status: l.status }; }),
         settings: publicSettings(db.getSettings()), today: today
       };
@@ -679,12 +714,14 @@ var KosCore = (function () {
       cari(db, 'Kos', d.id);
       var aktif = db.all('Penyewa').filter(function (p) { return p.kosId === d.id && p.status === 'aktif'; });
       if (aktif.length) throw new Error('Masih ada ' + aktif.length + ' penyewa aktif. Keluarkan dulu penyewanya.');
-      ['Pembayaran', 'Tagihan', 'Penyewa', 'Kamar', 'Pengeluaran'].forEach(function (t) {
+      var fileIds = db.all('Foto').filter(function (f) { return f.kosId === d.id; }).map(function (f) { return f.fileId; }).filter(function (x) { return x; });
+      ['Pembayaran', 'Tagihan', 'Penyewa', 'Kamar', 'Pengeluaran', 'Foto'].forEach(function (t) {
         var ids = db.all(t).filter(function (x) { return x.kosId === d.id; }).map(function (x) { return x.id; });
         db.removeMany(t, ids);
       });
+      db.removeMany('Profil', [d.id]);
       db.remove('Kos', d.id);
-      return { id: d.id };
+      return { id: d.id, fileIds: fileIds };
     },
 
     saveKamar: function (db, d, today) {
@@ -798,8 +835,80 @@ var KosCore = (function () {
 
     hapusPengeluaran: function (db, d) { cari(db, 'Pengeluaran', d.id); db.remove('Pengeluaran', d.id); return { id: d.id }; },
 
+    /* ---- profil & foto untuk website ---- */
+    saveProfil: function (db, d, today) {
+      cari(db, 'Kos', d.kosId);
+      var row = bersihkan('Profil', {
+        id: d.kosId, tipe: d.tipe || '', deskripsi: String(d.deskripsi || '').slice(0, 3000),
+        fasilitas: String(d.fasilitas || '').slice(0, 2000), peraturan: String(d.peraturan || '').slice(0, 2000),
+        maps: String(d.maps || '').slice(0, 500), tampil: d.tampil === 'tidak' ? 'tidak' : 'ya', diubah: today
+      });
+      if (db.all('Profil').some(function (p) { return p.id === d.kosId; })) db.update('Profil', d.kosId, row);
+      else db.insert('Profil', row);
+      return { id: d.kosId };
+    },
+
+    /** dipanggil setelah file tersimpan (Drive di server, data URL di mode contoh) */
+    tambahFoto: function (db, d, today) {
+      cari(db, 'Kos', d.kosId);
+      wajib(d.url, 'Alamat foto');
+      var maks = db.all('Foto').filter(function (f) { return f.kosId === d.kosId; }).reduce(function (m, f) { return Math.max(m, Number(f.urutan) || 0); }, 0);
+      var f = bersihkan('Foto', { id: newId('F'), kosId: d.kosId, fileId: d.fileId || '', url: d.url, keterangan: String(d.keterangan || '').slice(0, 200), urutan: maks + 1, dibuat: today + ' ' + Date.now() });
+      db.insert('Foto', f);
+      return { id: f.id };
+    },
+
+    ubahFoto: function (db, d) {
+      cari(db, 'Foto', d.id);
+      db.update('Foto', d.id, { keterangan: String(d.keterangan || '').slice(0, 200) });
+      return { id: d.id };
+    },
+
+    sampulFoto: function (db, d) {
+      var f = cari(db, 'Foto', d.id);
+      var min = db.all('Foto').filter(function (x) { return x.kosId === f.kosId; }).reduce(function (m, x) { return Math.min(m, Number(x.urutan) || 0); }, Infinity);
+      db.update('Foto', d.id, { urutan: min - 1 });
+      return { id: d.id };
+    },
+
+    hapusFoto: function (db, d) {
+      var f = cari(db, 'Foto', d.id);
+      db.remove('Foto', d.id);
+      return { id: d.id, fileIds: f.fileId ? [f.fileId] : [] };
+    },
+
+    /** data untuk website publik: TANPA nama, nomor WA, atau tagihan penyewa */
+    publik: function (db, d, today) {
+      var s = db.getSettings();
+      var profil = {};
+      db.all('Profil').forEach(function (p) { profil[p.id] = p; });
+      var terisi = {};
+      db.all('Penyewa').forEach(function (p) { if (p.status === 'aktif') terisi[p.kamarId] = 1; });
+      var foto = urutFoto(db.all('Foto'));
+      var kamar = db.all('Kamar');
+      var kos = db.all('Kos').map(function (k) {
+        var pr = profil[k.id] || {};
+        if (pr.tampil === 'tidak') return null;
+        var km = kamar.filter(function (x) { return x.kosId === k.id; }).sort(urutNomor);
+        var kosong = km.filter(function (x) { return !terisi[x.id]; });
+        var harga = km.map(function (x) { return Number(x.harga) || 0; }).filter(function (x) { return x > 0; });
+        return {
+          id: k.id, nama: k.nama, alamat: k.alamat, tipe: pr.tipe || '', deskripsi: pr.deskripsi || '',
+          fasilitas: pecah(pr.fasilitas), peraturan: pecah(pr.peraturan), maps: pr.maps || '',
+          totalKamar: km.length, kosong: kosong.length,
+          hargaMin: harga.length ? Math.min.apply(null, harga) : 0, hargaMax: harga.length ? Math.max.apply(null, harga) : 0,
+          kamarKosong: kosong.map(function (x) { return { nomor: x.nomor, harga: Number(x.harga) || 0, fasilitas: x.fasilitas || '' }; }),
+          foto: foto.filter(function (f) { return f.kosId === k.id; }).map(function (f) { return { url: f.url, fileId: f.fileId, keterangan: f.keterangan }; })
+        };
+      }).filter(function (x) { return x; });
+      return {
+        namaUsaha: s.namaUsaha, tagline: s.tagline, tentang: s.tentang,
+        wa: normalWa(s.waPublik || s.waPemilik), kos: kos, diperbarui: today
+      };
+    },
+
     saveSettings: function (db, d) {
-      var izin = ['namaUsaha', 'waPemilik', 'kirimPenyewa', 'kirimPemilik', 'hariSebelum', 'ulangTelat', 'templatePengingat', 'templateTelat', 'templateKuitansi'];
+      var izin = ['namaUsaha', 'tagline', 'tentang', 'waPublik', 'waPemilik', 'kirimPenyewa', 'kirimPemilik', 'hariSebelum', 'ulangTelat', 'templatePengingat', 'templateTelat', 'templateKuitansi'];
       var patch = {};
       izin.forEach(function (k) { if (d[k] !== undefined) patch[k] = String(d[k]); });
       if (d.pinBaru) {
@@ -822,7 +931,7 @@ var KosCore = (function () {
     TABEL: TABEL, ANGKA: ANGKA, DEFAULT_SETTINGS: DEFAULT_SETTINGS, BULAN: BULAN, BLN: BLN,
     pad: pad, ymd: ymd, parse: parse, addMonths: addMonths, addDays: addDays, dueDate: dueDate, diffDays: diffDays,
     periodeOf: periodeOf, fmtTgl: fmtTgl, fmtTglPendek: fmtTglPendek, fmtPeriode: fmtPeriode, fmtHari: fmtHari,
-    rupiah: rupiah, rupiahSingkat: rupiahSingkat, normalWa: normalWa, newId: newId, isiTemplate: isiTemplate,
+    rupiah: rupiah, rupiahSingkat: rupiahSingkat, pecah: pecah, normalWa: normalWa, newId: newId, isiTemplate: isiTemplate,
     rencanaTagihan: rencanaTagihan, pastikanTagihan: pastikanTagihan, hitung: hitung, statusKamar: statusKamar,
     varPesan: varPesan, pesanUntuk: pesanUntuk, pesanKuitansi: pesanKuitansi, rencanaPengingat: rencanaPengingat,
     publicSettings: publicSettings, jalankan: jalankan, bersihkan: bersihkan
@@ -853,6 +962,9 @@ const IC = {
   kas: I('<path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0 0 4h15v4M3 6v12a2 2 0 0 0 2 2h15v-4"/><path d="M15 12h6v4h-6a2 2 0 0 1 0-4z"/>'),
   atur: I('<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
   plus: I('<path d="M12 5v14M5 12h14"/>'),
+  kamera: I('<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>'),
+  globe: I('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>'),
+  salin: I('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>'),
   orang: I('<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>'),
   left: I('<path d="m15 18-6-6 6-6"/>'),
   right: I('<path d="m9 18 6-6-6-6"/>'),
@@ -888,6 +1000,8 @@ async function api(action, data) {
 
 function setData(d) {
   if (!d.log) d.log = [];
+  if (!d.foto) d.foto = [];
+  if (!d.profil) d.profil = [];
   S.data = d; S.today = d.today;
   S.tg = C.hitung(d, d.today, d.settings.hariSebelum);
   S.ks = C.statusKamar(d, S.tg);
@@ -950,6 +1064,7 @@ function demoSave() { store.set(DEMO_KEY, JSON.stringify(demoStore)); }
 async function demoApi(action, data) {
   if (action === 'tesWa' || action === 'kirimSekarang' || action === 'kirimWa') throw new Error('Pesan WhatsApp otomatis aktif setelah aplikasi terhubung ke Google Sheets.');
   const st = demoLoad(), db = MemDB(st), today = demoToday();
+  if (action === 'uploadFoto') { action = 'tambahFoto'; data = { kosId: data.kosId, url: 'data:' + data.mime + ';base64,' + data.data, keterangan: data.keterangan }; }
   const hasil = C.jalankan(db, action, data, today);
   const semua = C.jalankan(db, 'getAll', {}, today);
   demoSave();
@@ -1303,7 +1418,95 @@ function vKosDetail(id) {
     <div class="kv" style="border-top:1px solid var(--line);margin:0"><div><b>${r.isi}/${r.ks.length}</b><span>Kamar terisi</span></div><div><b>${C.rupiahSingkat(r.masuk)}</b><span>Masuk bulan ini</span></div><div><b class="${r.tunggak ? 'neg' : ''}">${C.rupiahSingkat(r.tunggak)}</b><span>Tunggakan</span></div></div>
   </div>
   <section class="sec"><div class="sechead"><h2>Daftar kamar</h2></div><div class="list">${rows || (r.ks.length ? '<div class="empty"><b>Tidak ada kamar di filter ini</b>Pilih filter lain di atas.</div>' : '<div class="empty"><b>Belum ada kamar</b>Tambahkan kamar untuk kos ini.</div>')}</div></section>
+  ${websiteKosHTML(k)}
   <div style="margin-top:28px"><button class="btn danger sm" data-act="hapusKos" data-id="${k.id}">${IC.trash}Hapus kos ini</button></div>`;
+}
+
+/* ---------- website: profil & foto ---------- */
+const urlWebsite = () => new URL('profil.html', location.href.split('#')[0]).href;
+const profilKos = id => S.data.profil.find(p => p.id === id) || { id, tipe: '', deskripsi: '', fasilitas: '', peraturan: '', maps: '', tampil: 'ya' };
+const fotoKos = id => S.data.foto.filter(f => f.kosId === id);
+function fotoImg(f, attr = '') {
+  const cad = f.fileId ? ` onerror="this.onerror=null;this.src='https://drive.google.com/thumbnail?id=${esc(f.fileId)}&sz=w1000'"` : '';
+  return `<img src="${esc(f.url)}" alt="${esc(f.keterangan || '')}" loading="lazy" referrerpolicy="no-referrer"${cad} ${attr}>`;
+}
+function websiteKosHTML(k) {
+  const pr = profilKos(k.id), fotos = fotoKos(k.id), tampil = pr.tampil !== 'tidak';
+  const fas = C.pecah(pr.fasilitas);
+  return `<section class="sec">
+    <div class="web-head"><div><h2>Profil di website</h2><p class="small muted" style="margin:2px 0 0">Foto dan info ini dilihat calon penyewa.</p></div>
+      <span class="pill ${tampil ? 'lunas' : 'kosong'}">${tampil ? 'Tampil di website' : 'Disembunyikan'}</span></div>
+    <div class="panel pad">
+      <div class="foto-grid">
+        ${fotos.map((f, i) => `<button class="foto" data-act="foto" data-id="${f.id}" aria-label="Foto ${i + 1}${f.keterangan ? ', ' + esc(f.keterangan) : ''}">${fotoImg(f)}${i === 0 ? '<span class="badge">Sampul</span>' : ''}${f.keterangan ? `<span class="cap">${esc(f.keterangan)}</span>` : ''}</button>`).join('')}
+        <label class="foto tambah">${IC.kamera}<span>Tambah foto</span><input type="file" accept="image/*" multiple data-upload="${k.id}" class="sr"></label>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">${fotos.length ? 'Foto pertama jadi sampul. Ketuk foto untuk ubah keterangan, jadikan sampul, atau hapus.' : 'Tambahkan foto bangunan, kamar, kamar mandi, dan area bersama. Bisa pilih beberapa foto sekaligus.'}</p>
+      <div class="divider"></div>
+      <dl class="ringkas">
+        <dt>Tipe</dt><dd>${esc(pr.tipe || 'Belum diisi')}</dd>
+        <dt>Fasilitas</dt><dd>${fas.length ? `<div class="chips-s">${fas.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : '<span class="muted">Belum diisi</span>'}</dd>
+        <dt>Lokasi</dt><dd>${pr.maps ? `<a href="${esc(pr.maps)}" target="_blank" rel="noopener">Buka Google Maps</a>` : '<span class="muted">Belum diisi</span>'}</dd>
+      </dl>
+      <div class="btnrow" style="margin-top:14px"><button class="btn ghost sm" data-act="ubahProfil" data-id="${k.id}">${IC.edit}Ubah profil</button><a class="btn soft sm" href="${esc(urlWebsite())}#kos/${k.id}" target="_blank" rel="noopener">${IC.globe}Lihat di website</a></div>
+    </div>
+  </section>`;
+}
+
+async function kompresFoto(file, max, q) {
+  let src;
+  try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch (e) {
+    src = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('File ' + file.name + ' bukan foto yang bisa dibaca')); i.src = URL.createObjectURL(file); });
+  }
+  const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+  const k = Math.min(1, max / Math.max(w, h));
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+  cv.getContext('2d').drawImage(src, 0, 0, cv.width, cv.height);
+  return cv.toDataURL('image/jpeg', q);
+}
+async function uploadFotos(kosId, files) {
+  const list = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)).slice(0, 12);
+  if (!list.length) return toast('Pilih file foto (JPG/PNG)', true);
+  busy(true);
+  let n = 0, last = null;
+  for (const f of list) {
+    toast(`Mengunggah foto ${n + 1} dari ${list.length}...`);
+    try {
+      const url = await kompresFoto(f, DEMO ? 900 : 1600, DEMO ? 0.7 : 0.82);
+      const r = await api('uploadFoto', { kosId, nama: f.name.replace(/\.[^.]+$/, '') + '.jpg', mime: 'image/jpeg', data: url.split(',')[1] });
+      last = r.semua; n++;
+    } catch (e) { toast(e.message, true); break; }
+  }
+  busy(false);
+  if (last) setData(last);
+  if (n) toast(n + ' foto terunggah');
+}
+function openFoto(id) {
+  const f = S.data.foto.find(x => x.id === id); if (!f) return;
+  const list = fotoKos(f.kosId), kos = kosById(f.kosId) || {};
+  const sampul = list[0] && list[0].id === id;
+  sheet(`${head('Foto ' + (list.indexOf(f) + 1) + ' dari ' + list.length, esc(kos.nama || ''))}
+    ${fotoImg(f, 'class="foto-besar"')}
+    <form data-form="foto"><input type="hidden" name="id" value="${f.id}">
+      <div class="field"><label for="fo-ket">Keterangan</label><input class="input" id="fo-ket" name="keterangan" value="${esc(f.keterangan)}" placeholder="Misal: Kamar mandi dalam" maxlength="200"></div>
+      <div class="sh-actions">${sampul ? '' : `<button type="button" class="btn ghost" data-act="sampulFoto" data-id="${f.id}">Jadikan sampul</button>`}<button class="btn" type="submit">Simpan keterangan</button></div>
+    </form>
+    <div style="text-align:center;margin-top:14px"><button class="btn danger sm" data-act="hapusFoto" data-id="${f.id}">${IC.trash}Hapus foto</button></div>`);
+}
+function formProfil(kosId) {
+  const k = kosById(kosId), pr = profilKos(kosId);
+  sheet(`${head('Profil ' + esc(k.nama), 'Ditampilkan di website untuk calon penyewa.')}
+  <form data-form="profil"><input type="hidden" name="kosId" value="${kosId}">
+    <label class="switch" style="padding-top:0"><span><b>Tampilkan di website</b><br><span class="small muted">Matikan untuk menyembunyikan kos ini</span></span><input type="checkbox" name="tampil" ${pr.tampil !== 'tidak' ? 'checked' : ''}></label>
+    <div class="field" style="margin-top:14px"><span class="flabel">Tipe kos</span><div class="seg">${['Campur', 'Putra', 'Putri', 'Pasutri'].map(t => `<label><input type="radio" name="tipe" value="${t}" ${pr.tipe === t ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div></div>
+    <div class="field"><label for="pr-desk">Deskripsi singkat</label><textarea class="textarea" id="pr-desk" name="deskripsi" placeholder="Misal: Kos bersih dan tenang, 5 menit ke kampus Unram, dekat warung makan dan minimarket.">${esc(pr.deskripsi)}</textarea></div>
+    <div class="field"><label for="pr-fas">Fasilitas</label><textarea class="textarea" id="pr-fas" name="fasilitas" placeholder="Satu fasilitas per baris&#10;WiFi&#10;Kamar mandi dalam&#10;Kasur dan lemari&#10;Parkir motor">${esc(pr.fasilitas)}</textarea><span class="help">Satu per baris. Tampil sebagai label di website.</span></div>
+    <div class="field"><label for="pr-per">Peraturan</label><textarea class="textarea" id="pr-per" name="peraturan" placeholder="Satu aturan per baris&#10;Tamu sampai jam 21.00&#10;Dilarang merokok di kamar">${esc(pr.peraturan)}</textarea></div>
+    <div class="field"><label for="pr-maps">Link Google Maps</label><input class="input" id="pr-maps" name="maps" type="url" value="${esc(pr.maps)}" placeholder="https://maps.app.goo.gl/..."><span class="help">Buka Google Maps, cari lokasi kos, ketuk Bagikan, lalu Salin link.</span></div>
+    <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">Simpan profil</button></div>
+  </form>`);
 }
 
 /* ---------- TAGIHAN ---------- */
@@ -1407,6 +1610,16 @@ function vAtur() {
       <div class="field"><label for="t-kw">Kuitansi pembayaran</label><textarea class="textarea" id="t-kw" name="templateKuitansi">${esc(s.templateKuitansi)}</textarea>${tagBtns(tagsK, 't-kw')}</div>
       <button class="btn block" type="submit">Simpan pengaturan</button>
       ${DEMO ? `<div class="divider"></div><button type="button" class="btn danger sm" data-act="resetDemo">Kembalikan data contoh</button>` : `<div class="divider"></div><button type="button" class="btn ghost sm" data-act="keluarApp">${IC.keluar}Keluar dari aplikasi</button>`}
+    </div>
+    <div class="panel pad">
+      <h2>Website profil kos</h2><p class="desc">Halaman untuk calon penyewa: foto, harga, fasilitas, dan kamar yang masih kosong. Bagikan link ini di status WA, Instagram, atau Facebook.</p>
+      <div class="linkbox"><code>${esc(urlWebsite())}</code><button type="button" class="icon-btn" data-act="salinLink" aria-label="Salin link" title="Salin link">${IC.salin}</button></div>
+      <div class="btnrow" style="margin-bottom:16px"><a class="btn soft sm" href="${esc(urlWebsite())}" target="_blank" rel="noopener">${IC.globe}Buka website</a><a class="btn ghost sm" href="https://wa.me/?text=${encodeURIComponent('Info kamar kos ' + s.namaUsaha + ': ' + urlWebsite())}" target="_blank" rel="noopener">${IC.wa}Bagikan ke WA</a></div>
+      <div class="field"><label for="w-tag">Kalimat utama</label><input class="input" id="w-tag" name="tagline" value="${esc(s.tagline)}" maxlength="90" placeholder="Kos nyaman, aman, dan terjangkau"></div>
+      <div class="field"><label for="w-wa">WhatsApp untuk calon penyewa</label><input class="input" id="w-wa" name="waPublik" inputmode="tel" value="${esc(s.waPublik)}" placeholder="${esc(s.waPemilik || '08xxxxxxxxxx')}"><span class="help">Tampil di website. Kalau kosong, memakai WhatsApp pemilik.</span></div>
+      <div class="field"><label for="w-tentang">Tentang kami</label><textarea class="textarea" id="w-tentang" name="tentang" maxlength="1200" placeholder="Cerita singkat tentang kos Anda, misalnya sudah berdiri sejak kapan dan keunggulannya.">${esc(s.tentang)}</textarea></div>
+      <button class="btn block" type="submit">Simpan pengaturan</button>
+      <p class="small muted" style="margin:12px 0 0">Foto dan fasilitas diatur per kos di menu Kos, lalu pilih kosnya.</p>
     </div>
   </form>`;
 }
@@ -1714,6 +1927,22 @@ const ACT = {
   },
   fStatus(d) { S.fStatus = d.v; render(); },
   fKamar(d) { S.fKamar = { id: d.id, v: d.v }; render(); },
+  foto: d => openFoto(d.id),
+  ubahProfil: d => formProfil(d.id),
+  async sampulFoto(d) {
+    const ket = $('#fo-ket'), f = S.data.foto.find(x => x.id === d.id);
+    if (ket && f && ket.value !== f.keterangan) await api('ubahFoto', { id: d.id, keterangan: ket.value });
+    await aksi('sampulFoto', { id: d.id }, 'Jadi foto sampul'); closeSheet();
+  },
+  async hapusFoto(d) {
+    const f = S.data.foto.find(x => x.id === d.id);
+    if (!await konfirmasi('Hapus foto ini?', 'Foto akan hilang dari website dan dipindah ke sampah Google Drive.', 'Hapus foto', true)) return openFoto(d.id);
+    await aksi('hapusFoto', { id: d.id }, 'Foto dihapus');
+  },
+  async salinLink() {
+    try { await navigator.clipboard.writeText(urlWebsite()); toast('Link website disalin'); }
+    catch (e) { toast('Tidak bisa menyalin otomatis. Tekan lama link untuk menyalin.', true); }
+  },
   sisip(d) {
     const ta = document.getElementById(d.t); const v = d.v;
     const a = ta.selectionStart ?? ta.value.length, b = ta.selectionEnd ?? a;
@@ -1757,6 +1986,11 @@ const FORM = {
       if (btn) { btn.disabled = false; btn.innerHTML = IC.send + 'Kirim sekarang'; }
     } finally { busy(false); }
   },
+  async foto(v) { await aksi('ubahFoto', v, 'Keterangan disimpan'); closeSheet(); },
+  async profil(v, f) {
+    v.tampil = f.tampil.checked ? 'ya' : 'tidak';
+    await aksi('saveProfil', v, 'Profil disimpan'); closeSheet();
+  },
   async tagihan(v) { await aksi('ubahTagihan', { id: v.id, nominal: angka(v.nominal), jatuhTempo: v.jatuhTempo, catatan: v.catatan }, 'Tagihan diubah'); openTagihan(v.id); },
   async pengeluaran(v) { await aksi('savePengeluaran', { id: v.id, kosId: v.kosId, kategori: v.kategori, nominal: angka(v.nominal), tanggal: v.tanggal, keterangan: v.keterangan }, 'Pengeluaran tersimpan'); S.kasBulan = C.periodeOf(v.tanggal); closeSheet(); if (route().page !== 'kas') location.hash = '#/kas'; else render(); },
   async settings(v, f) {
@@ -1788,6 +2022,8 @@ document.addEventListener('submit', e => {
 document.addEventListener('change', e => {
   const el = e.target.closest('[data-change]');
   if (el && el.dataset.change === 'fKos') { S.fKos = el.value; render(); }
+  const up = e.target.closest('[data-upload]');
+  if (up && up.files && up.files.length) { const files = [...up.files]; up.value = ''; uploadFotos(up.dataset.upload, files); }
 });
 document.addEventListener('input', e => {
   if (e.target.classList.contains('money')) {

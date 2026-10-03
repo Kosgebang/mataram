@@ -211,6 +211,8 @@ footer b{color:var(--navy)}
 const API_URL = 'https://script.google.com/macros/s/AKfycbx6SPCYglIcVWfbeMaZ5C-h9QDuv-WTWgWPfxCDcvlaiD5cBGp4Z9M2FyoJGLjX9GTEAA/exec';
 
 const $ = s => document.querySelector(s);
+/* link khusus satu kos: profil.html?kos=ID */
+const KOS_SATU = new URLSearchParams(location.search).get('kos');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const rp = n => 'Rp ' + String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const rpS = n => { n = +n || 0; return n >= 1e6 ? 'Rp ' + (n / 1e6).toFixed(n % 1e6 ? 1 : 0).replace('.', ',') + ' jt' : n >= 1e3 ? 'Rp ' + Math.round(n / 1e3) + ' rb' : rp(n); };
@@ -259,7 +261,7 @@ function carousel(k, opt = {}) {
 
 /* ---------- halaman utama ---------- */
 function vHome() {
-  const kos = D.kos;
+  const kos = D.kos.filter(k => k.daftar !== false);
   const kosong = kos.reduce((a, k) => a + k.kosong, 0);
   const harga = kos.map(k => k.hargaMin).filter(Boolean);
   const urut = kos.slice().sort((a, b) => (b.kosong > 0) - (a.kosong > 0));
@@ -307,7 +309,7 @@ function vDetail(k) {
   const wa = waUrl(pesanKos(k));
   const rooms = k.kamarKosong;
   return `<div class="wrap">
-    <a class="back" href="#">${IC.left}Semua lokasi</a>
+    ${KOS_SATU ? '<div style="height:18px"></div>' : `<a class="back" href="#">${IC.left}Semua lokasi</a>`}
     <div class="detail">
       <div class="d-gal">
         <div class="gal">${carousel(k, { badges: true })}</div>
@@ -342,8 +344,19 @@ function vDetail(k) {
 
 /* ---------- render ---------- */
 function render() {
-  const m = location.hash.match(/^#kos\/(.+)$/);
-  const k = m && D.kos.find(x => x.id === decodeURIComponent(m[1]));
+  let k;
+  if (KOS_SATU) {
+    k = D.kos.find(x => x.id === KOS_SATU);
+    if (!k) {
+      const wa = waUrl(pesanUmum());
+      $('#app').innerHTML = `<div class="wrap" style="padding-top:40px"><div class="msg"><b>Halaman kos ini tidak tersedia</b>Mungkin sedang tidak ditampilkan. Tanyakan langsung lewat WhatsApp.${wa ? `<div style="margin-top:16px"><a class="btn wa" href="${wa}" target="_blank" rel="noopener">${IC.wa}Chat WhatsApp</a></div>` : ''}</div></div>`;
+      $('#float').hidden = true;
+      return;
+    }
+  } else {
+    const m = location.hash.match(/^#kos\/(.+)$/);
+    k = m && D.kos.find(x => x.id === decodeURIComponent(m[1]));
+  }
   $('#app').innerHTML = (k ? vDetail(k) : vHome()) + `<footer><div class="wrap"><b>${esc(D.namaUsaha)}</b><br>Data kamar diperbarui ${tgl(D.diperbarui)}</div></footer>`;
   document.title = k ? k.nama + ' | ' + D.namaUsaha : D.namaUsaha;
   const wa = k ? waUrl(pesanKos(k)) : waUrl(pesanUmum());
@@ -404,7 +417,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') tutupLightbox();
   if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') geser(lbEl.querySelector('.car'), e.key === 'ArrowRight' ? 1 : -1);
 });
-window.addEventListener('hashchange', () => { tutupLightbox(); if (D) { render(); window.scrollTo(0, 0); } });
+window.addEventListener('hashchange', () => { tutupLightbox(); if (D && !KOS_SATU) { render(); window.scrollTo(0, 0); } });
 
 /* ---------- muat data ---------- */
 function loading() {
@@ -420,7 +433,9 @@ async function muat() {
     D = j.data;
     $('#brandName').textContent = D.namaUsaha;
     const tw = $('#topWa');
-    if (D.wa) { tw.hidden = false; tw.href = waUrl(pesanUmum()); tw.innerHTML = IC.wa + '<span>Chat WhatsApp</span>'; }
+    const kSatu = KOS_SATU && D.kos.find(x => x.id === KOS_SATU);
+    if (kSatu) { $('.brand').href = location.pathname + location.search; $('#brandName').textContent = kSatu.nama; }
+    if (D.wa) { tw.hidden = false; tw.href = waUrl(kSatu ? pesanKos(kSatu) : pesanUmum()); tw.innerHTML = IC.wa + '<span>Chat WhatsApp</span>'; }
     render();
     if (location.hash.startsWith('#kos/')) window.scrollTo(0, 0);
   } catch (e) {

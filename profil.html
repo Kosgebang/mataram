@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kos Budi</title>
+<meta name="description" content="Info kamar kos Kos Budi: foto, harga, fasilitas, dan kamar yang masih kosong. Tanya langsung lewat WhatsApp.">
+<meta name="theme-color" content="#0E2A63">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kos Budi — cek kamar kosong">
+<meta property="og:description" content="Lihat foto, harga, fasilitas, dan kamar yang masih kosong. Tanya langsung lewat WhatsApp.">
+<meta property="og:image" content="https://kosgebang.github.io/mataram/og-image.jpg">
+<meta property="og:url" content="https://kosgebang.github.io/mataram/profil.html">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0E2A63; --navy-2:#173A80; --ink:#14213D; --muted:#56657F;
+  --sky:#EAF4FF; --sky-2:#D6E9FF; --paper:#FFFFFF; --line:#DCE6F2;
+  --sun:#FFC21A; --sun-soft:#FFF3CC; --brick:#C9561F; --brick-soft:#FCE6DA;
+  --ok:#17804A; --ok-soft:#DDF3E6; --wa:#1DA851; --wa-2:#168A42;
+  --r:18px; --shadow:0 1px 2px rgba(14,42,99,.06),0 8px 24px rgba(14,42,99,.08);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--sky);color:var(--ink);font:16px/1.55 'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%}
+a{color:var(--navy-2)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+h1,h2,h3{font-family:'Baloo 2',system-ui,sans-serif;color:var(--navy);line-height:1.12;margin:0;letter-spacing:-.005em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+[hidden]{display:none!important}
+@media (min-width:900px){[data-hp]{display:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--navy);font-family:'Baloo 2';font-weight:800;font-size:21px}
+.brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border-radius:14px;border:0;font-weight:700;font-size:15.5px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.wa{background:var(--wa);color:#fff}
+.btn.wa:hover{background:var(--wa-2)}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.navy:hover{background:var(--navy-2)}
+.btn.line{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.line:hover{box-shadow:inset 0 0 0 1.5px var(--navy)}
+.btn.sm{min-height:40px;padding:8px 14px;font-size:14px;border-radius:11px}
+.btn.block{width:100%}
+.top .btn{min-height:40px;padding:8px 14px;font-size:14px}
+@media (max-width:520px){.top .btn span{display:none}.top .btn{padding:8px 11px}}
+
+/* ---------- hero ---------- */
+.hero{padding:20px 0 8px}
+.hero .wrap{display:grid;gap:22px}
+.hero-img{border-radius:24px;overflow:hidden;box-shadow:var(--shadow);background:var(--sky-2);aspect-ratio:900/1234;max-height:72vh}
+.hero-img img{width:100%;height:100%;object-fit:cover;object-position:top}
+.hero h1{font-size:clamp(34px,8.5vw,58px);font-weight:800;text-wrap:balance}
+.hero p.lead{font-size:17px;color:var(--muted);margin:12px 0 0;max-width:46ch}
+.avail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0 0;max-width:460px}
+.avail div{background:#fff;border-radius:16px;padding:12px 12px;box-shadow:var(--shadow);min-width:0}
+.avail b{display:block;font-family:'Baloo 2';font-size:clamp(19px,5.2vw,28px);line-height:1.15;color:var(--navy);white-space:nowrap}
+.avail span{display:block;line-height:1.3}
+.avail span{font-size:13.5px;color:var(--muted)}
+.avail .hot b{color:var(--ok)}
+.hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+@media (max-width:520px){.hero .cta .btn{flex:1}}
+@media (min-width:860px){
+  .hero{padding:36px 0 16px}
+  .hero .wrap{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:center;gap:48px}
+  .hero-img{max-height:none}
+}
+
+/* ---------- section ---------- */
+.sec{padding:40px 0 8px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.sec-head h2{font-size:30px;font-weight:800}
+.sec-head p{margin:4px 0 0;color:var(--muted)}
+
+/* ---------- kartu kos ---------- */
+.grid{display:grid;gap:18px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1060px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card h3{font-size:24px;font-weight:800}
+.card h3 a{color:inherit;text-decoration:none}
+.addr{display:flex;gap:6px;align-items:flex-start;color:var(--muted);font-size:14px}
+.addr svg{width:16px;height:16px;flex:none;margin-top:3px}
+.price{font-size:14px;color:var(--muted)}
+.price b{font-family:'Baloo 2';font-size:23px;color:var(--navy);font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:13px;font-weight:600;background:var(--sky);color:var(--navy);border-radius:99px;padding:4px 10px}
+.card .actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.card .actions .btn{flex:1}
+
+/* ---------- carousel ---------- */
+.car{position:relative;background:var(--sky-2)}
+.car-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.car-track::-webkit-scrollbar{display:none}
+.car-track>*{flex:0 0 100%;scroll-snap-align:center;aspect-ratio:4/3;border:0;padding:0;margin:0;background:none;cursor:zoom-in}
+.car-track img{width:100%;height:100%;object-fit:cover}
+.car-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.car-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);transition:width .2s,background .2s}
+.car-dots i.on{width:18px;border-radius:99px;background:#fff}
+.car-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);opacity:0;transition:opacity .15s}
+.car-nav svg{width:20px;height:20px;color:var(--navy)}
+.car-nav.prev{left:10px}.car-nav.next{right:10px}
+.car:hover .car-nav{opacity:1}
+@media (hover:none){.car-nav{display:none}}
+.badges{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.badge{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.badge.ok{background:var(--ok);color:#fff}
+.badge.few{background:var(--sun);color:var(--ink)}
+.badge.full{background:#E9EDF3;color:var(--muted)}
+.count{position:absolute;right:12px;top:12px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(14,42,99,.72);color:#fff;pointer-events:none}
+.nofoto{aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--navy);background:linear-gradient(160deg,var(--sky-2),#F5FAFF);font-family:'Baloo 2';font-weight:700;font-size:20px;text-align:center;padding:16px}
+.nofoto svg{width:44px;height:44px;opacity:.6}
+
+/* ---------- detail ---------- */
+.back{display:inline-flex;align-items:center;gap:4px;font-weight:700;color:var(--navy);text-decoration:none;margin:18px 0 12px}
+.back svg{width:20px;height:20px}
+.detail{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"gal" "info" "boxes";gap:18px;padding-bottom:40px}
+.d-gal{grid-area:gal}.d-boxes{grid-area:boxes}.detail .info{grid-area:info}
+.d-boxes>.box:first-child{margin-top:0}
+.detail>*{min-width:0}
+.gal{border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.gal .car-track>*{aspect-ratio:16/11}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:thin}
+.thumbs button{flex:0 0 76px;height:58px;border-radius:10px;overflow:hidden;border:2px solid transparent;padding:0;cursor:pointer;background:var(--sky-2);opacity:.7}
+.thumbs button.on{border-color:var(--navy);opacity:1}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.info h1{font-size:clamp(32px,7vw,46px);font-weight:800;margin-top:6px}
+.info .tags{display:flex;gap:6px;flex-wrap:wrap}
+.box{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-top:16px}
+.box h2{font-size:22px;font-weight:800;margin-bottom:10px}
+.box p{margin:0;white-space:pre-line}
+.fas{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px 14px;margin:0;padding:0;list-style:none}
+.fas li{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:15px}
+.fas svg{width:20px;height:20px;flex:none;color:var(--ok);margin-top:1px}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.rules li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.rules li::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sun);margin-top:9px}
+.rooms{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.room{min-width:0}
+.room{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px 10px 10px 12px}
+.room-no{flex:none;width:52px;height:56px;border-radius:12px 12px 5px 5px;background:var(--ok-soft);border:1.6px solid var(--ok);color:var(--ok);font-family:'Baloo 2';font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center}
+.room-main{flex:1;min-width:0}
+.room-main b{display:block;font-size:16px}
+.room-main span{font-size:13.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+.full-note{background:var(--sky);border-radius:14px;padding:14px 16px;color:var(--muted)}
+.full-note b{color:var(--ink)}
+.side-cta{display:none}
+@media (min-width:900px){
+  .detail{grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-areas:"gal info" "boxes info";align-items:start;column-gap:32px;row-gap:16px}
+  .detail .info{position:sticky;top:76px;align-self:start}
+  .side-cta{display:grid;gap:8px;margin-top:16px}
+}
+
+/* ---------- tentang & footer ---------- */
+.about{background:var(--navy);color:#fff;border-radius:24px;padding:26px 22px;margin-top:8px}
+.about h2{color:#fff;font-size:28px;margin-bottom:8px}
+.about p{margin:0;color:#D7E3F7;max-width:68ch;white-space:pre-line}
+footer{padding:36px 0 120px;color:var(--muted);font-size:14px;text-align:center}
+footer b{color:var(--navy)}
+@media (min-width:900px){footer{padding-bottom:48px}}
+
+/* ---------- WA melayang (HP) ---------- */
+.float{position:fixed;left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;gap:8px}
+.float .btn{flex:1;min-width:0;padding:12px 14px;box-shadow:0 8px 24px rgba(14,42,99,.28)}
+.float .btn.navy{flex:0 0 auto}
+@media (min-width:900px){.float{display:none}}
+
+/* ---------- lightbox ---------- */
+.lb{position:fixed;inset:0;z-index:60;background:#060D1E;display:flex;flex-direction:column}
+.lb-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;color:#fff;font-weight:700}
+.lb-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lb-x svg{width:22px;height:22px}
+.lb .car-track{flex:1;height:100%}
+.lb .car-track>figure{aspect-ratio:auto;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:default}
+.lb figure img{max-width:100%;max-height:calc(100vh - 140px);object-fit:contain}
+.lb figcaption{color:#fff;font-size:15px;padding:10px 16px;text-align:center}
+.lb .car{flex:1;display:flex;background:none;min-height:0}
+.lb .car-nav{opacity:1}
+
+/* ---------- loading ---------- */
+.sk{background:linear-gradient(90deg,#E3EDF9 25%,#F1F6FD 50%,#E3EDF9 75%);background-size:300% 100%;animation:sk 1.3s infinite linear;border-radius:12px}
+@keyframes sk{from{background-position:100% 0}to{background-position:0 0}}
+.msg{background:#fff;border-radius:var(--r);padding:28px 20px;text-align:center;box-shadow:var(--shadow)}
+.msg b{display:block;font-size:18px;color:var(--navy);margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#"><img src="icon-192.png" alt=""><span id="brandName">Kos Budi</span></a>
+  <a class="btn wa" id="topWa" href="#" target="_blank" rel="noopener" hidden></a>
+</div></header>
+<main id="app"></main>
+<div class="float" id="float" hidden></div>
+
+<script>
+/* URL Web App Apps Script yang sama dengan aplikasi pembukuan (berakhiran /exec) */
+const API_URL = 'https://script.google.com/macros/s/AKfycbx6SPCYglIcVWfbeMaZ5C-h9QDuv-WTWgWPfxCDcvlaiD5cBGp4Z9M2FyoJGLjX9GTEAA/exec';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rp = n => 'Rp ' + String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const rpS = n => { n = +n || 0; return n >= 1e6 ? 'Rp ' + (n / 1e6).toFixed(n % 1e6 ? 1 : 0).replace('.', ',') + ' jt' : n >= 1e3 ? 'Rp ' + Math.round(n / 1e3) + ' rb' : rp(n); };
+const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const tgl = s => { const p = String(s || '').split('-'); return p.length === 3 ? (+p[2]) + ' ' + BLN[+p[1] - 1] + ' ' + p[0] : ''; };
+const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const IC = {
+  wa: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5.1 5.2-1.4A9.9 9.9 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3a8.2 8.2 0 1 1 7 3.9zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>`,
+  pin: I('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
+  cek: I('<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.7 2.7L16.5 9.5"/>'),
+  left: I('<path d="m15 18-6-6 6-6"/>'),
+  right: I('<path d="m9 18 6-6-6-6"/>'),
+  x: I('<path d="M18 6 6 18M6 6l12 12"/>'),
+  rumah: I('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>'),
+  peta: I('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>')
+};
+
+let D = null;
+const waUrl = pesan => D && D.wa ? 'https://wa.me/' + D.wa + '?text=' + encodeURIComponent(pesan) : '';
+const pesanUmum = () => `Halo ${D.namaUsaha}, saya lihat website kos. Saya mau tanya kamar yang masih kosong.`;
+const pesanKos = k => `Halo ${D.namaUsaha}, saya tertarik dengan ${k.nama}${k.alamat ? ' (' + k.alamat + ')' : ''}. Apakah masih ada kamar kosong? Kapan bisa survey?`;
+const pesanKamar = (k, r) => `Halo ${D.namaUsaha}, saya tertarik dengan ${k.nama} kamar ${r.nomor} (${rp(r.harga)}/bulan). Apakah masih tersedia? Kapan bisa survey?`;
+const hargaTeks = k => !k.hargaMin ? '' : k.hargaMin === k.hargaMax ? `<b>${rpS(k.hargaMin)}</b> /bulan` : `mulai <b>${rpS(k.hargaMin)}</b> /bulan`;
+
+function img(f, alt) {
+  const cad = f.fileId ? ` onerror="this.onerror=null;this.src='https://drive.google.com/thumbnail?id=${esc(f.fileId)}&sz=w1600'"` : '';
+  return `<img src="${esc(f.url)}" alt="${esc(f.keterangan || alt || '')}" loading="lazy" referrerpolicy="no-referrer"${cad}>`;
+}
+function badgeKos(k) {
+  const b = [];
+  if (k.tipe) b.push(`<span class="badge">${esc(k.tipe)}</span>`);
+  if (!k.kosong) b.push('<span class="badge full">Penuh</span>');
+  else if (k.kosong <= 2) b.push(`<span class="badge few">Sisa ${k.kosong} kamar</span>`);
+  else b.push(`<span class="badge ok">${k.kosong} kamar kosong</span>`);
+  return `<div class="badges">${b.join('')}</div>`;
+}
+function carousel(k, opt = {}) {
+  if (!k.foto.length) return `<div class="car">${opt.badges ? badgeKos(k) : ''}<div class="nofoto">${IC.rumah}${esc(k.nama)}</div></div>`;
+  const n = k.foto.length;
+  return `<div class="car" data-car>
+    <div class="car-track" tabindex="0" aria-label="Foto ${esc(k.nama)}">${k.foto.map((f, i) => `<button type="button" data-lb="${esc(k.id)}" data-i="${i}" aria-label="Perbesar foto ${i + 1}">${img(f, k.nama + ' foto ' + (i + 1))}</button>`).join('')}</div>
+    ${n > 1 ? `<button class="car-nav prev" data-geser="-1" aria-label="Foto sebelumnya">${IC.left}</button><button class="car-nav next" data-geser="1" aria-label="Foto berikutnya">${IC.right}</button><div class="car-dots">${k.foto.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}
+    ${opt.badges ? badgeKos(k) : ''}${opt.count && n > 1 ? `<span class="count">${n} foto</span>` : ''}
+  </div>`;
+}
+
+/* ---------- halaman utama ---------- */
+function vHome() {
+  const kos = D.kos;
+  const kosong = kos.reduce((a, k) => a + k.kosong, 0);
+  const harga = kos.map(k => k.hargaMin).filter(Boolean);
+  const urut = kos.slice().sort((a, b) => (b.kosong > 0) - (a.kosong > 0));
+  const wa = waUrl(pesanUmum());
+  return `
+  <section class="hero"><div class="wrap">
+    <div class="hero-img"><img src="hero.jpg" alt="${esc(D.namaUsaha)}" fetchpriority="high"></div>
+    <div>
+      <h1>${esc(D.tagline || D.namaUsaha)}</h1>
+      <p class="lead">Lihat foto, harga, dan fasilitas tiap lokasi. Kamar kosong di bawah ini diperbarui langsung dari catatan kami.</p>
+      <div class="avail">
+        <div class="${kosong ? 'hot' : ''}"><b>${kosong}</b><span>kamar kosong</span></div>
+        <div><b>${kos.length}</b><span>lokasi kos</span></div>
+        ${harga.length ? `<div><b>${rpS(Math.min(...harga))}</b><span>mulai per bulan</span></div>` : ''}
+      </div>
+      <div class="cta">
+        <a class="btn navy" href="#lokasi" data-gulir>Lihat kamar</a>
+        ${wa ? `<a class="btn wa" href="${wa}" target="_blank" rel="noopener">${IC.wa}Chat WhatsApp</a>` : ''}
+      </div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="lokasi"><div class="wrap">
+    <div class="sec-head"><div><h2>Pilih lokasi kos</h2><p>${kos.length ? 'Ketuk foto untuk melihat lebih besar.' : ''}</p></div></div>
+    ${kos.length ? `<div class="grid">${urut.map(k => `
+      <article class="card">
+        ${carousel(k, { badges: true, count: true })}
+        <div class="card-body">
+          <h3><a href="#kos/${esc(k.id)}">${esc(k.nama)}</a></h3>
+          ${k.alamat ? `<div class="addr">${IC.pin}<span>${esc(k.alamat)}</span></div>` : ''}
+          ${hargaTeks(k) ? `<div class="price">${hargaTeks(k)}</div>` : ''}
+          ${k.fasilitas.length ? `<div class="chips">${k.fasilitas.slice(0, 4).map(x => `<span>${esc(x)}</span>`).join('')}${k.fasilitas.length > 4 ? `<span>+${k.fasilitas.length - 4} lagi</span>` : ''}</div>` : ''}
+          <div class="actions">
+            <a class="btn line sm" href="#kos/${esc(k.id)}">Lihat detail</a>
+            ${D.wa ? `<a class="btn wa sm" href="${waUrl(pesanKos(k))}" target="_blank" rel="noopener">${IC.wa}Tanya</a>` : ''}
+          </div>
+        </div>
+      </article>`).join('')}</div>` : `<div class="msg"><b>Info kos segera hadir</b>${wa ? 'Sementara ini, tanyakan langsung lewat WhatsApp.' : ''}</div>`}
+    ${D.tentang ? `<div class="about" style="margin-top:28px"><h2>Tentang ${esc(D.namaUsaha)}</h2><p>${esc(D.tentang)}</p></div>` : ''}
+  </div></section>`;
+}
+
+/* ---------- detail kos ---------- */
+function vDetail(k) {
+  const wa = waUrl(pesanKos(k));
+  const rooms = k.kamarKosong;
+  return `<div class="wrap">
+    <a class="back" href="#">${IC.left}Semua lokasi</a>
+    <div class="detail">
+      <div class="d-gal">
+        <div class="gal">${carousel(k, { badges: true })}</div>
+        ${k.foto.length > 1 ? `<div class="thumbs" role="tablist" aria-label="Pilih foto">${k.foto.map((f, i) => `<button class="${i ? '' : 'on'}" data-thumb="${i}" aria-label="Foto ${i + 1}">${img(f)}</button>`).join('')}</div>` : ''}
+      </div>
+      <div class="d-boxes">
+        ${k.deskripsi ? `<div class="box"><h2>Tentang kos ini</h2><p>${esc(k.deskripsi)}</p></div>` : ''}
+        ${k.fasilitas.length ? `<div class="box"><h2>Fasilitas</h2><ul class="fas">${k.fasilitas.map(x => `<li>${IC.cek}<span>${esc(x)}</span></li>`).join('')}</ul></div>` : ''}
+        <div class="box" id="kamar"><h2>Kamar kosong${rooms.length ? ` (${rooms.length})` : ''}</h2>
+          ${rooms.length ? `<div class="rooms">${rooms.map(r => `<div class="room">
+            <span class="room-no">${esc(r.nomor)}</span>
+            <div class="room-main"><b>${rp(r.harga)}</b><span>per bulan${r.fasilitas ? ', ' + esc(r.fasilitas) : ''}</span></div>
+            ${D.wa ? `<a class="btn wa sm" href="${waUrl(pesanKamar(k, r))}" target="_blank" rel="noopener">${IC.wa}Tanya</a>` : ''}
+          </div>`).join('')}</div>` : `<div class="full-note"><b>Saat ini semua kamar terisi.</b> Kirim pesan untuk masuk daftar tunggu, kami kabari kalau ada kamar kosong.</div>`}
+        </div>
+        ${k.peraturan.length ? `<div class="box"><h2>Peraturan</h2><ul class="rules">${k.peraturan.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+      </div>
+      <div class="info">
+        <div class="tags">${k.tipe ? `<span class="badge" style="box-shadow:none;background:var(--sky-2)">Kos ${esc(k.tipe.toLowerCase())}</span>` : ''}<span class="badge ${k.kosong ? (k.kosong <= 2 ? 'few' : 'ok') : 'full'}" style="box-shadow:none">${k.kosong ? k.kosong + ' dari ' + k.totalKamar + ' kamar kosong' : 'Penuh'}</span></div>
+        <h1>${esc(k.nama)}</h1>
+        ${k.alamat ? `<div class="addr" style="margin-top:8px;font-size:15px">${IC.pin}<span>${esc(k.alamat)}</span></div>` : ''}
+        ${hargaTeks(k) ? `<div class="price" style="margin-top:12px;font-size:15px">${hargaTeks(k)}${k.hargaMax > k.hargaMin ? ` <span>sampai ${rpS(k.hargaMax)}</span>` : ''}</div>` : ''}
+        <div class="side-cta">
+          ${wa ? `<a class="btn wa block" href="${wa}" target="_blank" rel="noopener">${IC.wa}Chat WhatsApp</a>` : ''}
+          ${k.maps ? `<a class="btn line block" href="${esc(k.maps)}" target="_blank" rel="noopener">${IC.peta}Lihat lokasi di Maps</a>` : ''}
+        </div>
+        ${k.maps ? `<a class="btn line sm" style="margin-top:14px" href="${esc(k.maps)}" target="_blank" rel="noopener" data-hp>${IC.peta}Lihat lokasi di Maps</a>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- render ---------- */
+function render() {
+  const m = location.hash.match(/^#kos\/(.+)$/);
+  const k = m && D.kos.find(x => x.id === decodeURIComponent(m[1]));
+  $('#app').innerHTML = (k ? vDetail(k) : vHome()) + `<footer><div class="wrap"><b>${esc(D.namaUsaha)}</b><br>Data kamar diperbarui ${tgl(D.diperbarui)}</div></footer>`;
+  document.title = k ? k.nama + ' | ' + D.namaUsaha : D.namaUsaha;
+  const wa = k ? waUrl(pesanKos(k)) : waUrl(pesanUmum());
+  const fl = $('#float');
+  fl.hidden = !wa;
+  fl.innerHTML = wa ? `${k && k.kamarKosong.length ? `<a class="btn navy" href="#kamar" data-gulir>Kamar kosong</a>` : ''}<a class="btn wa" href="${wa}" target="_blank" rel="noopener">${IC.wa}${k && k.kamarKosong.length ? 'Chat WA' : 'Chat WhatsApp'}</a>` : '';
+  pasangCarousel();
+}
+function pasangCarousel() {
+  document.querySelectorAll('[data-car]').forEach(car => {
+    const tr = car.querySelector('.car-track'), dots = car.querySelectorAll('.car-dots i');
+    const thumbs = car.closest('.gal') ? document.querySelectorAll('[data-thumb]') : [];
+    tr.addEventListener('scroll', () => {
+      const i = Math.round(tr.scrollLeft / tr.clientWidth);
+      dots.forEach((d, j) => d.classList.toggle('on', i === j));
+      thumbs.forEach((t, j) => t.classList.toggle('on', i === j));
+    }, { passive: true });
+  });
+}
+function geser(car, arah) { const tr = car.querySelector('.car-track'); tr.scrollBy({ left: arah * tr.clientWidth, behavior: 'smooth' }); }
+
+/* ---------- lightbox ---------- */
+let lbEl = null, lastFocus = null;
+function bukaLightbox(k, i) {
+  lastFocus = document.activeElement;
+  lbEl = document.createElement('div');
+  lbEl.className = 'lb'; lbEl.setAttribute('role', 'dialog'); lbEl.setAttribute('aria-modal', 'true'); lbEl.setAttribute('aria-label', 'Foto ' + k.nama);
+  lbEl.innerHTML = `<div class="lb-top"><span id="lbN">${i + 1} / ${k.foto.length}</span><button class="lb-x" aria-label="Tutup">${IC.x}</button></div>
+    <div class="car"><div class="car-track">${k.foto.map(f => `<figure>${img(f, k.nama)}${f.keterangan ? `<figcaption>${esc(f.keterangan)}</figcaption>` : ''}</figure>`).join('')}</div>
+    ${k.foto.length > 1 ? `<button class="car-nav prev" data-geser="-1" aria-label="Foto sebelumnya">${IC.left}</button><button class="car-nav next" data-geser="1" aria-label="Foto berikutnya">${IC.right}</button>` : ''}</div>`;
+  document.body.appendChild(lbEl);
+  document.body.style.overflow = 'hidden';
+  const tr = lbEl.querySelector('.car-track');
+  lbEl.querySelectorAll('img').forEach(im => im.loading = 'eager');
+  requestAnimationFrame(() => { tr.scrollLeft = i * tr.clientWidth; });
+  tr.addEventListener('scroll', () => { $('#lbN').textContent = (Math.round(tr.scrollLeft / tr.clientWidth) + 1) + ' / ' + k.foto.length; }, { passive: true });
+  lbEl.querySelector('.lb-x').addEventListener('click', tutupLightbox);
+  lbEl.querySelector('.lb-x').focus();
+}
+function tutupLightbox() {
+  if (!lbEl) return;
+  lbEl.remove(); lbEl = null; document.body.style.overflow = '';
+  if (lastFocus) lastFocus.focus({ preventScroll: true });
+}
+
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-geser]');
+  if (g) { e.preventDefault(); geser(g.closest('.car'), +g.dataset.geser); return; }
+  const lb = e.target.closest('[data-lb]');
+  if (lb) { const k = D.kos.find(x => x.id === lb.dataset.lb); if (k) bukaLightbox(k, +lb.dataset.i); return; }
+  const th = e.target.closest('[data-thumb]');
+  if (th) { const tr = document.querySelector('.gal .car-track'); tr.scrollTo({ left: +th.dataset.thumb * tr.clientWidth, behavior: 'smooth' }); return; }
+  const gl = e.target.closest('[data-gulir]');
+  if (gl) { e.preventDefault(); const t = document.querySelector(gl.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+});
+document.addEventListener('keydown', e => {
+  if (!lbEl) return;
+  if (e.key === 'Escape') tutupLightbox();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') geser(lbEl.querySelector('.car'), e.key === 'ArrowRight' ? 1 : -1);
+});
+window.addEventListener('hashchange', () => { tutupLightbox(); if (D) { render(); window.scrollTo(0, 0); } });
+
+/* ---------- muat data ---------- */
+function loading() {
+  $('#app').innerHTML = `<section class="hero"><div class="wrap"><div class="hero-img"><img src="hero.jpg" alt="" fetchpriority="high"></div><div><div class="sk" style="height:110px;max-width:440px"></div><div class="sk" style="height:22px;margin-top:16px;max-width:380px"></div><div class="sk" style="height:74px;margin-top:22px;max-width:360px"></div></div></div></section>
+    <section class="sec"><div class="wrap"><div class="grid">${'<div class="sk" style="height:380px;border-radius:18px"></div>'.repeat(3)}</div></div></section>`;
+}
+async function muat() {
+  loading();
+  try {
+    const res = await fetch(API_URL + '?aksi=publik');
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Gagal memuat');
+    D = j.data;
+    $('#brandName').textContent = D.namaUsaha;
+    const tw = $('#topWa');
+    if (D.wa) { tw.hidden = false; tw.href = waUrl(pesanUmum()); tw.innerHTML = IC.wa + '<span>Chat WhatsApp</span>'; }
+    render();
+    if (location.hash.startsWith('#kos/')) window.scrollTo(0, 0);
+  } catch (e) {
+    $('#app').innerHTML = `<div class="wrap" style="padding-top:40px"><div class="msg"><b>Info kamar belum bisa dimuat</b>Periksa koneksi internet lalu coba lagi.<div style="margin-top:16px"><button class="btn navy" onclick="muat()">Coba lagi</button></div></div></div>`;
+  }
+}
+muat();
+</script>
+</body>
+</html>

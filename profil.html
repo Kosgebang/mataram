@@ -427,7 +427,8 @@ function loading() {
 async function muat() {
   loading();
   try {
-    const res = await fetch(API_URL + '?aksi=publik');
+    // link khusus: minta data kos itu saja, kos lain tidak ikut terkirim ke browser
+    const res = await fetch(API_URL + '?aksi=publik' + (KOS_SATU ? '&kos=' + encodeURIComponent(KOS_SATU) : ''));
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Gagal memuat');
     D = j.data;

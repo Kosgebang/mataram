@@ -1475,7 +1475,7 @@ function websiteKosHTML(k) {
         return `<div class="linkbox"><code>${esc(link)}</code><button type="button" class="icon-btn" data-act="salinLink" data-url="${esc(link)}" aria-label="Salin link kos ini" title="Salin link">${IC.salin}</button></div>
       <div class="btnrow"><a class="btn soft sm" href="${esc(link)}" target="_blank" rel="noopener">${IC.globe}Buka</a><a class="btn ghost sm" href="https://wa.me/?text=${encodeURIComponent('Info kamar ' + k.nama + ': ' + link)}" target="_blank" rel="noopener">${IC.wa}Bagikan ke WA</a>
         <button type="button" class="btn ${pendek ? 'ghost' : ''} sm" data-act="linkPendek" data-id="${k.id}">${pendek ? 'Ganti link pendek' : 'Buat link pendek'}</button></div>
-      ${pendek ? `<p class="small muted" style="margin:10px 0 0">Link pendek ini mengarah ke halaman kos ini. Link lama tetap bisa dipakai.</p>` : `<p class="small muted" style="margin:10px 0 0">Buat link pendek supaya alamat website tidak terlihat di link yang dibagikan, misalnya is.gd/KosPinkGebang.</p>`}`;
+      ${pendek ? `<p class="small muted" style="margin:10px 0 0">Link pendek ini mengarah ke halaman kos ini. Link lama tetap bisa dipakai.</p>` : `<p class="small muted" style="margin:10px 0 0">Buat link pendek supaya alamat website tidak terlihat di link yang dibagikan, misalnya is.gd/KosPinkGebang atau tinyurl.com/KosPinkGebang.</p>`}`;
       })()}
     </div>
   </section>`;
@@ -1964,8 +1964,8 @@ const ACT = {
     sheet(`${head(pr.linkPendek ? 'Ganti link pendek' : 'Buat link pendek', esc(k.nama))}
       <form data-form="linkPendek"><input type="hidden" name="kosId" value="${k.id}">
         <div class="field"><label for="lp-alias">Nama link</label>
-          <div class="prefix"><span style="left:13px">is.gd/</span><input class="input" id="lp-alias" name="alias" style="padding-left:62px" maxlength="30" pattern="[A-Za-z0-9_]{5,30}" placeholder="${esc(saran.length >= 5 ? saran : 'KosBudiGebang')}" autocomplete="off"></div>
-          <span class="help">5 sampai 30 huruf atau angka, tanpa spasi. Kosongkan untuk kode acak, misalnya is.gd/aB3xYz.</span></div>
+          <input class="input" id="lp-alias" name="alias" maxlength="30" pattern="[A-Za-z0-9_]{5,30}" placeholder="${esc(saran.length >= 5 ? saran : 'KosBudiGebang')}" autocomplete="off">
+          <span class="help">5 sampai 30 huruf atau angka, tanpa spasi. Hasilnya seperti is.gd/${esc(saran.length >= 5 ? saran : 'KosBudiGebang')} atau tinyurl.com/${esc(saran.length >= 5 ? saran : 'KosBudiGebang')}. Kosongkan untuk kode acak.</span></div>
         ${saran.length >= 5 ? `<div class="quick" style="margin:-6px 0 14px"><button type="button" data-isi-alias="${esc(saran)}">${esc(saran)}</button></div>` : ''}
         ${pr.linkPendek ? `<div class="note" style="margin-bottom:14px">Link lama <b>${esc(pr.linkPendek)}</b> tetap bisa dibuka, tapi aplikasi akan menampilkan link yang baru.</div>` : ''}
         <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">Buat link</button></div>

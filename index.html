@@ -112,6 +112,8 @@ h2{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:750}
 .d-ic{position:absolute;top:8px;right:7px;display:flex;opacity:.75}
 .d-ic svg{width:14px;height:14px}
 .d-st{display:none}
+.d-tgl{font-size:10.5px;font-weight:700;line-height:1.2;margin-top:auto;padding-top:3px;opacity:.78;white-space:nowrap}
+.board.lg .d-tgl{font-size:12px;margin-top:0;padding-top:0;font-weight:650}
 .board.lg .door{min-height:116px;padding:12px 12px 11px;border-radius:16px 16px 6px 6px;gap:3px}
 .board.lg .d-no{font-size:21px}
 .board.lg .d-nama{font-size:13.5px;font-weight:700;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -407,7 +409,7 @@ var KosCore = (function () {
     Pembayaran: ['id', 'tagihanId', 'penyewaId', 'kosId', 'tanggal', 'nominal', 'metode', 'catatan', 'dibuat'],
     Pengeluaran: ['id', 'kosId', 'tanggal', 'kategori', 'nominal', 'keterangan', 'dibuat'],
     LogPengingat: ['tanggal', 'tagihanId', 'tujuan', 'jenis', 'status', 'pesan'],
-    Profil: ['id', 'tipe', 'deskripsi', 'fasilitas', 'peraturan', 'maps', 'tampil', 'diubah'],
+    Profil: ['id', 'tipe', 'deskripsi', 'fasilitas', 'peraturan', 'maps', 'tampil', 'diubah', 'linkPendek'],
     Foto: ['id', 'kosId', 'fileId', 'url', 'keterangan', 'urutan', 'dibuat']
   };
   var ANGKA = ['harga', 'hariTempo', 'deposit', 'nominal', 'urutan'];
@@ -843,9 +845,19 @@ var KosCore = (function () {
         fasilitas: String(d.fasilitas || '').slice(0, 2000), peraturan: String(d.peraturan || '').slice(0, 2000),
         maps: String(d.maps || '').slice(0, 500), tampil: ['tidak', 'link'].indexOf(d.tampil) >= 0 ? d.tampil : 'ya', diubah: today
       });
-      if (db.all('Profil').some(function (p) { return p.id === d.kosId; })) db.update('Profil', d.kosId, row);
+      var lama = db.all('Profil').filter(function (p) { return p.id === d.kosId; })[0];
+      if (lama) { row.linkPendek = lama.linkPendek || ''; db.update('Profil', d.kosId, row); }
       else db.insert('Profil', row);
       return { id: d.kosId };
+    },
+
+    /** dipanggil Apps Script setelah is.gd membuat link pendek */
+    simpanLinkPendek: function (db, d, today) {
+      cari(db, 'Kos', d.kosId);
+      var lama = db.all('Profil').filter(function (p) { return p.id === d.kosId; })[0];
+      if (lama) db.update('Profil', d.kosId, { linkPendek: d.linkPendek });
+      else db.insert('Profil', bersihkan('Profil', { id: d.kosId, tampil: 'ya', diubah: today, linkPendek: d.linkPendek }));
+      return { id: d.kosId, linkPendek: d.linkPendek };
     },
 
     /** dipanggil setelah file tersimpan (Drive di server, data URL di mode contoh) */
@@ -1063,6 +1075,7 @@ function demoLoad() {
 }
 function demoSave() { store.set(DEMO_KEY, JSON.stringify(demoStore)); }
 async function demoApi(action, data) {
+  if (action === 'buatLinkPendek') throw new Error('Link pendek dibuat setelah aplikasi terhubung ke Google Sheets.');
   if (action === 'tesWa' || action === 'kirimSekarang' || action === 'kirimWa') throw new Error('Pesan WhatsApp otomatis aktif setelah aplikasi terhubung ke Google Sheets.');
   const st = demoLoad(), db = MemDB(st), today = demoToday();
   if (action === 'uploadFoto') { action = 'tambahFoto'; data = { kosId: data.kosId, url: 'data:' + data.mime + ';base64,' + data.data, keterangan: data.keterangan }; }
@@ -1189,16 +1202,18 @@ function labelKamar(st, km) {
   if (t.hari < 0) return 'Telat ' + (-t.hari) + ' hr';
   if (t.hari === 0) return 'Hari ini';
   if (t.hari === 1) return 'Besok';
-  return 'Tgl ' + C.fmtTglPendek(t.jatuhTempo);
+  if (t.status === 'dekat') return t.hari + ' hari lagi';
+  return 'Belum bayar';
 }
 function doorHTML(k, lg) {
   const st = S.ks[k.id] || { status: 'kosong' };
   const p = st.penyewa;
-  const lbl = `Kamar ${k.nomor}, ${p ? p.nama + ', ' + (st.tagihan ? teksTempo(st.tagihan) : STATUS_LABEL[st.status]) : 'kosong, ' + C.rupiah(k.harga) + ' per bulan'}`;
+  const lbl = `Kamar ${k.nomor}, ${p ? p.nama + ', bayar tiap tanggal ' + p.hariTempo + ', ' + (st.tagihan ? teksTempo(st.tagihan) : STATUS_LABEL[st.status]) : 'kosong, ' + C.rupiah(k.harga) + ' per bulan'}`;
   return `<button class="door ${st.status}" data-act="kamar" data-id="${k.id}" aria-label="${esc(lbl)}" title="${esc(lbl)}">
     <span class="d-ic">${p ? IC.orang : IC.plus}</span>
     <span class="d-no">${esc(k.nomor)}</span>
     <span class="d-nama">${p ? esc(lg ? p.nama : namaPendek(p.nama)) : 'Kosong'}</span>
+    ${p ? `<span class="d-tgl">${lg ? 'Bayar tgl ' : 'Tgl '}${esc(p.hariTempo)}</span>` : ''}
     <span class="d-st">${esc(labelKamar(st, k))}</span>
   </button>`;
 }
@@ -1455,8 +1470,13 @@ function websiteKosHTML(k) {
       <div class="divider"></div>
       <div class="flabel" style="margin-bottom:4px">Link khusus kos ini</div>
       <p class="small muted" style="margin:0 0 10px">${tampil === 'tidak' ? 'Kos ini disembunyikan, jadi link ini belum bisa dibuka. Ubah lewat Ubah profil.' : 'Hanya menampilkan ' + esc(k.nama) + ', tanpa kos lain. Cocok untuk iklan atau status WA khusus lokasi ini.'}</p>
-      <div class="linkbox"><code>${esc(urlKos(k.id))}</code><button type="button" class="icon-btn" data-act="salinLink" data-url="${esc(urlKos(k.id))}" aria-label="Salin link kos ini" title="Salin link">${IC.salin}</button></div>
-      <div class="btnrow"><a class="btn soft sm" href="${esc(urlKos(k.id))}" target="_blank" rel="noopener">${IC.globe}Buka</a><a class="btn ghost sm" href="https://wa.me/?text=${encodeURIComponent('Info kamar ' + k.nama + ': ' + urlKos(k.id))}" target="_blank" rel="noopener">${IC.wa}Bagikan ke WA</a></div>
+      ${(() => {
+        const pendek = pr.linkPendek, link = pendek || urlKos(k.id);
+        return `<div class="linkbox"><code>${esc(link)}</code><button type="button" class="icon-btn" data-act="salinLink" data-url="${esc(link)}" aria-label="Salin link kos ini" title="Salin link">${IC.salin}</button></div>
+      <div class="btnrow"><a class="btn soft sm" href="${esc(link)}" target="_blank" rel="noopener">${IC.globe}Buka</a><a class="btn ghost sm" href="https://wa.me/?text=${encodeURIComponent('Info kamar ' + k.nama + ': ' + link)}" target="_blank" rel="noopener">${IC.wa}Bagikan ke WA</a>
+        <button type="button" class="btn ${pendek ? 'ghost' : ''} sm" data-act="linkPendek" data-id="${k.id}">${pendek ? 'Ganti link pendek' : 'Buat link pendek'}</button></div>
+      ${pendek ? `<p class="small muted" style="margin:10px 0 0">Link pendek ini mengarah ke halaman kos ini. Link lama tetap bisa dipakai.</p>` : `<p class="small muted" style="margin:10px 0 0">Buat link pendek supaya alamat website tidak terlihat di link yang dibagikan, misalnya is.gd/KosPinkGebang.</p>`}`;
+      })()}
     </div>
   </section>`;
 }
@@ -1938,6 +1958,20 @@ const ACT = {
   fKamar(d) { S.fKamar = { id: d.id, v: d.v }; render(); },
   foto: d => openFoto(d.id),
   ubahProfil: d => formProfil(d.id),
+  linkPendek(d) {
+    const k = kosById(d.id), pr = profilKos(d.id);
+    const saran = String(k.nama).replace(/[^A-Za-z0-9 ]/g, '').split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join('').slice(0, 30);
+    sheet(`${head(pr.linkPendek ? 'Ganti link pendek' : 'Buat link pendek', esc(k.nama))}
+      <form data-form="linkPendek"><input type="hidden" name="kosId" value="${k.id}">
+        <div class="field"><label for="lp-alias">Nama link</label>
+          <div class="prefix"><span style="left:13px">is.gd/</span><input class="input" id="lp-alias" name="alias" style="padding-left:62px" maxlength="30" pattern="[A-Za-z0-9_]{5,30}" placeholder="${esc(saran.length >= 5 ? saran : 'KosBudiGebang')}" autocomplete="off"></div>
+          <span class="help">5 sampai 30 huruf atau angka, tanpa spasi. Kosongkan untuk kode acak, misalnya is.gd/aB3xYz.</span></div>
+        ${saran.length >= 5 ? `<div class="quick" style="margin:-6px 0 14px"><button type="button" data-isi-alias="${esc(saran)}">${esc(saran)}</button></div>` : ''}
+        ${pr.linkPendek ? `<div class="note" style="margin-bottom:14px">Link lama <b>${esc(pr.linkPendek)}</b> tetap bisa dibuka, tapi aplikasi akan menampilkan link yang baru.</div>` : ''}
+        <div class="sh-actions"><button type="button" class="btn ghost" data-act="tutup">Batal</button><button class="btn" type="submit">Buat link</button></div>
+      </form>`);
+    sheetEl.querySelectorAll('[data-isi-alias]').forEach(b => b.addEventListener('click', () => { $('#lp-alias').value = b.dataset.isiAlias; }));
+  },
   async sampulFoto(d) {
     const ket = $('#fo-ket'), f = S.data.foto.find(x => x.id === d.id);
     if (ket && f && ket.value !== f.keterangan) await api('ubahFoto', { id: d.id, keterangan: ket.value });
@@ -1993,6 +2027,20 @@ const FORM = {
     } catch (e) {
       toast(e.message, true);
       if (btn) { btn.disabled = false; btn.innerHTML = IC.send + 'Kirim sekarang'; }
+    } finally { busy(false); }
+  },
+  async linkPendek(v) {
+    const btn = sheetEl && sheetEl.querySelector('[type=submit]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Membuat...'; }
+    busy(true);
+    try {
+      const r = await api('buatLinkPendek', { kosId: v.kosId, alias: v.alias, url: urlKos(v.kosId) });
+      setData(r.semua); closeSheet();
+      try { await navigator.clipboard.writeText(r.hasil.linkPendek); toast('Link dibuat dan disalin: ' + r.hasil.linkPendek); }
+      catch (e) { toast('Link dibuat: ' + r.hasil.linkPendek); }
+    } catch (e) {
+      toast(e.message, true);
+      if (btn) { btn.disabled = false; btn.textContent = 'Buat link'; }
     } finally { busy(false); }
   },
   async foto(v) { await aksi('ubahFoto', v, 'Keterangan disimpan'); closeSheet(); },

@@ -528,7 +528,35 @@ var KosCore = (function () {
     return baru;
   }
 
+  var TANDA_TUNGGAKAN = '[tunggakan]';
+
+  /** buang tagihan yang tidak perlu tampil lagi:
+      - tagihan belum dibayar milik penyewa yang sudah keluar / sudah dihapus
+        (kecuali sengaja disimpan sebagai tunggakan)
+      - tagihan dobel untuk penyewa & bulan yang sama */
+  function rapikanTagihan(db) {
+    var penyewa = {};
+    db.all('Penyewa').forEach(function (p) { penyewa[p.id] = p; });
+    var ada = {};
+    db.all('Pembayaran').forEach(function (b) { ada[b.tagihanId] = 1; });
+    var list = db.all('Tagihan').sort(function (a, b) {
+      return ((ada[b.id] ? 1 : 0) - (ada[a.id] ? 1 : 0)) || String(a.dibuat).localeCompare(String(b.dibuat));
+    });
+    var lihat = {}, hapus = [];
+    list.forEach(function (t) {
+      var p = penyewa[t.penyewaId];
+      var simpan = String(t.catatan || '').indexOf(TANDA_TUNGGAKAN) >= 0;
+      if (!ada[t.id] && (!p || (p.status !== 'aktif' && !simpan))) { hapus.push(t.id); return; }
+      var kunci = t.penyewaId + '|' + t.periode;
+      if (lihat[kunci] && !ada[t.id]) { hapus.push(t.id); return; }
+      lihat[kunci] = 1;
+    });
+    if (hapus.length) db.removeMany('Tagihan', hapus);
+    return hapus.length;
+  }
+
   function pastikanTagihan(db, today) {
+    rapikanTagihan(db);
     var s = db.getSettings();
     var baru = rencanaTagihan(db.all('Penyewa'), db.all('Tagihan'), today, s.hariSebelum);
     if (baru.length) db.insertMany('Tagihan', baru);
@@ -794,10 +822,25 @@ var KosCore = (function () {
       var tgl = d.tglKeluar || today;
       db.update('Penyewa', p.id, { status: 'keluar', tglKeluar: tgl });
       var dibayar = {};
-      db.all('Pembayaran').forEach(function (b) { dibayar[b.tagihanId] = 1; });
-      var hapus = db.all('Tagihan').filter(function (t) { return t.penyewaId === p.id && !dibayar[t.id] && t.jatuhTempo > tgl; }).map(function (t) { return t.id; });
+      db.all('Pembayaran').forEach(function (b) { dibayar[b.tagihanId] = (dibayar[b.tagihanId] || 0) + Number(b.nominal); });
+      var simpanTunggakan = d.simpanTunggakan === true || d.simpanTunggakan === 'ya';
+      var hapus = [], tutup = 0, tunggak = 0;
+      db.all('Tagihan').forEach(function (t) {
+        if (t.penyewaId !== p.id) return;
+        var bayar = dibayar[t.id] || 0;
+        if (bayar >= Number(t.nominal)) return;                      // sudah lunas: tetap jadi riwayat
+        if (simpanTunggakan && t.jatuhTempo <= tgl) {                 // sengaja dicatat sebagai tunggakan
+          if (String(t.catatan).indexOf(TANDA_TUNGGAKAN) < 0) db.update('Tagihan', t.id, { catatan: (t.catatan ? t.catatan + ' ' : '') + TANDA_TUNGGAKAN });
+          tunggak++; return;
+        }
+        if (bayar > 0) {                                              // sebagian dibayar: ditutup sebesar yang sudah dibayar
+          db.update('Tagihan', t.id, { nominal: bayar, catatan: (t.catatan ? t.catatan + ' ' : '') + 'Ditutup saat penyewa keluar' });
+          tutup++; return;
+        }
+        hapus.push(t.id);                                             // belum dibayar sama sekali: dihapus
+      });
       db.removeMany('Tagihan', hapus);
-      return { id: p.id, tagihanDihapus: hapus.length };
+      return { id: p.id, tagihanDihapus: hapus.length, tagihanDitutup: tutup, tunggakan: tunggak };
     },
 
     bayar: function (db, d, today) {
@@ -889,9 +932,13 @@ var KosCore = (function () {
       db.all('Penyewa').forEach(function (p) { if (p.status === 'aktif') terisi[p.kamarId] = 1; });
       var foto = urutFoto(db.all('Foto'));
       var kamar = db.all('Kamar');
+      // d.kos diisi  -> hanya kos itu (link khusus), kecuali disembunyikan
+      // d.kos kosong -> hanya kos "Tampil di semua"; kos "hanya lewat link" tidak ikut terkirim
+      var satu = d && d.kos ? String(d.kos) : '';
       var kos = db.all('Kos').map(function (k) {
         var pr = profil[k.id] || {};
         if (pr.tampil === 'tidak') return null;
+        if (satu ? k.id !== satu : pr.tampil === 'link') return null;
         var km = kamar.filter(function (x) { return x.kosId === k.id; }).sort(urutNomor);
         var kosong = km.filter(function (x) { return !terisi[x.id]; });
         var harga = km.map(function (x) { return Number(x.harga) || 0; }).filter(function (x) { return x > 0; });
@@ -936,7 +983,7 @@ var KosCore = (function () {
     pad: pad, ymd: ymd, parse: parse, addMonths: addMonths, addDays: addDays, dueDate: dueDate, diffDays: diffDays,
     periodeOf: periodeOf, fmtTgl: fmtTgl, fmtTglPendek: fmtTglPendek, fmtPeriode: fmtPeriode, fmtHari: fmtHari,
     rupiah: rupiah, rupiahSingkat: rupiahSingkat, pecah: pecah, normalWa: normalWa, newId: newId, isiTemplate: isiTemplate,
-    rencanaTagihan: rencanaTagihan, pastikanTagihan: pastikanTagihan, hitung: hitung, statusKamar: statusKamar,
+    rencanaTagihan: rencanaTagihan, pastikanTagihan: pastikanTagihan, rapikanTagihan: rapikanTagihan, hitung: hitung, statusKamar: statusKamar,
     varPesan: varPesan, pesanUntuk: pesanUntuk, pesanKuitansi: pesanKuitansi, rencanaPengingat: rencanaPengingat,
     publicSettings: publicSettings, jalankan: jalankan, bersihkan: bersihkan
   };
@@ -1913,7 +1960,8 @@ const ACT = {
     const w = sheet(`${head(esc(p.nama) + ' keluar', 'Kamar akan kosong dan bisa diisi penyewa baru.')}
       <form data-form="keluar"><input type="hidden" name="id" value="${p.id}">
       <div class="field"><label for="k-tgl">Tanggal keluar</label><input class="input" type="date" id="k-tgl" name="tglKeluar" required value="${S.today}"></div>
-      <p class="small muted" style="margin:-4px 0 14px">Tagihan yang belum dibayar dengan jatuh tempo setelah tanggal ini dihapus. Tunggakan sebelumnya tetap tercatat.${p.deposit ? ' Deposit ' + C.rupiah(p.deposit) + ' jangan lupa dikembalikan atau diperhitungkan.' : ''}</p>
+      <p class="small muted" style="margin:-4px 0 12px">Semua tagihan ${esc(p.nama)} yang belum dibayar akan dihapus dan tidak tampil lagi di menu Tagihan. Tagihan yang sudah lunas tetap tersimpan sebagai riwayat.${p.deposit ? ' Deposit ' + C.rupiah(p.deposit) + ' jangan lupa dikembalikan atau diperhitungkan.' : ''}</p>
+      <label class="switch" style="border-bottom:0;padding-top:0"><span><b>Masih ada utang yang ditagih?</b><br><span class="small muted">Nyalakan kalau tagihan sebelum tanggal keluar tetap ingin dicatat sebagai tunggakan</span></span><input type="checkbox" name="simpanTunggakan"></label>
       <div class="sh-actions"><button type="button" class="btn ghost" data-act="kamar" data-id="${p.kamarId}">Batal</button><button class="btn danger solid" type="submit">Konfirmasi keluar</button></div></form>`);
   },
   ubahTagihan(d) {
@@ -1983,7 +2031,13 @@ const FORM = {
     await aksi('savePenyewa', { id: v.id, kamarId: v.kamarId, nama: v.nama, wa: v.wa, tglMasuk: v.tglMasuk, hariTempo: v.hariTempo, harga: angka(v.harga), deposit: angka(v.deposit), catatan: v.catatan }, v.id ? 'Data penyewa disimpan' : 'Penyewa ditambahkan');
     openKamar(v.kamarId);
   },
-  async keluar(v) { const p = penyewaById(v.id); const r = await aksi('keluarPenyewa', v, 'Penyewa sudah keluar'); openKamar(p.kamarId); },
+  async keluar(v, f) {
+    const p = penyewaById(v.id);
+    v.simpanTunggakan = f.simpanTunggakan.checked;
+    const r = await aksi('keluarPenyewa', v, 'Penyewa sudah keluar');
+    if (r && r.tagihanDihapus) toast(`${p.nama} keluar. ${r.tagihanDihapus} tagihan belum dibayar dihapus.`);
+    openKamar(p.kamarId);
+  },
   async bayar(v) {
     const b = await aksi('bayar', { tagihanId: v.tagihanId, nominal: angka(v.nominal), tanggal: v.tanggal, metode: v.metode, catatan: v.catatan }, 'Pembayaran tersimpan');
     openKuitansi(b.id);

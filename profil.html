@@ -334,9 +334,9 @@ function vDetail(k) {
         ${hargaTeks(k) ? `<div class="price" style="margin-top:12px;font-size:15px">${hargaTeks(k)}${k.hargaMax > k.hargaMin ? ` <span>sampai ${rpS(k.hargaMax)}</span>` : ''}</div>` : ''}
         <div class="side-cta">
           ${wa ? `<a class="btn wa block" href="${wa}" target="_blank" rel="noopener">${IC.wa}Chat WhatsApp</a>` : ''}
-          ${k.maps ? `<a class="btn line block" href="${esc(k.maps)}" target="_blank" rel="noopener">${IC.peta}Lihat lokasi di Maps</a>` : ''}
+          ${/^https?:\/\//i.test(k.maps||'') ? `<a class="btn line block" href="${esc(k.maps)}" target="_blank" rel="noopener">${IC.peta}Lihat lokasi di Maps</a>` : ''}
         </div>
-        ${k.maps ? `<a class="btn line sm" style="margin-top:14px" href="${esc(k.maps)}" target="_blank" rel="noopener" data-hp>${IC.peta}Lihat lokasi di Maps</a>` : ''}
+        ${/^https?:\/\//i.test(k.maps||'') ? `<a class="btn line sm" style="margin-top:14px" href="${esc(k.maps)}" target="_blank" rel="noopener" data-hp>${IC.peta}Lihat lokasi di Maps</a>` : ''}
       </div>
     </div>
   </div>`;

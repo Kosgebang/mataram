@@ -10,9 +10,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kos Budi">
+<meta name="apple-mobile-web-app-title" content="Budi Suciati">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Pembukuan Kos</title>
+<title>Kos Budi Suciati</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1323,7 +1323,7 @@ function setData(d, dariCache) {
   S.ks = C.statusKamar(d, S.tg);
   if (!S.bulan) S.bulan = C.periodeOf(d.today);
   if (!S.kasBulan) S.kasBulan = C.periodeOf(d.today);
-  document.title = (d.settings.namaUsaha || 'Pembukuan Kos');
+  document.title = (d.settings.namaUsaha || 'Kos Budi Suciati');
   render();
 }
 
@@ -2568,8 +2568,8 @@ window.addEventListener('hashchange', () => { closeSheet(true); render(); });
 /* ---------- login ---------- */
 function tampilLogin(err) {
   $('#root').innerHTML = `<div class="login"><form class="panel" id="loginForm">
-    <img class="brand-mark" src="icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px">
-    <h1>Pembukuan Kos</h1><p class="muted" style="margin:0 0 20px">Masukkan PIN untuk membuka aplikasi.</p>
+    <img class="brand-mark" src="icon-192.png" alt="Logo Kos Budi Suciati" style="width:96px;height:96px;border-radius:20px">
+    <h1>Kos Budi Suciati</h1><p class="muted" style="margin:0 0 20px">Pembukuan kos. Masukkan PIN untuk membuka aplikasi.</p>
     <div class="field"><label for="pin" class="sr">PIN</label><input class="input pin" id="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required autofocus></div>
     <p class="small" id="loginErr" style="color:var(--telat);min-height:20px;margin:-6px 0 10px">${err ? esc(err) : ''}</p>
     <button class="btn block" type="submit">Masuk</button>

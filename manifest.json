@@ -1,7 +1,7 @@
 {
-  "name": "Kos Budi",
-  "short_name": "Kos Budi",
-  "description": "Pembukuan Kos Budi: tagihan sewa, pembayaran, kas, dan pengingat WhatsApp.",
+  "name": "Kos Budi Suciati",
+  "short_name": "Budi Suciati",
+  "description": "Pembukuan Kos Budi Suciati: tagihan sewa, pembayaran, kas, dan pengingat WhatsApp.",
   "id": "./",
   "start_url": "./#/beranda",
   "scope": "./",

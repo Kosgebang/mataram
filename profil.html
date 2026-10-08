@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kos Budi</title>
-<meta name="description" content="Info kamar kos Kos Budi: foto, harga, fasilitas, dan kamar yang masih kosong. Tanya langsung lewat WhatsApp.">
-<meta name="theme-color" content="#0E2A63">
+<title>Kos Budi Suciati</title>
+<meta name="description" content="Info kamar Kos Budi Suciati: foto, harga, fasilitas, dan kamar yang masih kosong. Tanya langsung lewat WhatsApp.">
+<meta name="theme-color" content="#1C1A17">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Kos Budi — cek kamar kosong">
+<meta property="og:title" content="Kos Budi Suciati — cek kamar kosong">
 <meta property="og:description" content="Lihat foto, harga, fasilitas, dan kamar yang masih kosong. Tanya langsung lewat WhatsApp.">
 <meta property="og:image" content="https://kosgebang.github.io/mataram/og-image.jpg">
 <meta property="og:url" content="https://kosgebang.github.io/mataram/profil.html">
@@ -18,11 +18,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0E2A63; --navy-2:#173A80; --ink:#14213D; --muted:#56657F;
-  --sky:#EAF4FF; --sky-2:#D6E9FF; --paper:#FFFFFF; --line:#DCE6F2;
-  --sun:#FFC21A; --sun-soft:#FFF3CC; --brick:#C9561F; --brick-soft:#FCE6DA;
+  /* warna mengikuti logo Budi Suciati Kost: hitam arang + emas */
+  --navy:#1C1A17; --navy-2:#3B342A; --ink:#1C1A17; --muted:#6A6256;
+  --sky:#F6F2EA; --sky-2:#ECE4D4; --paper:#FFFFFF; --line:#E3DACA;
+  --sun:#D4A42A; --sun-soft:#F8EDD0; --brick:#C9561F; --brick-soft:#FCE6DA;
   --ok:#17804A; --ok-soft:#DDF3E6; --wa:#1DA851; --wa-2:#168A42;
-  --r:18px; --shadow:0 1px 2px rgba(14,42,99,.06),0 8px 24px rgba(14,42,99,.08);
+  --r:18px; --shadow:0 1px 2px rgba(28,26,23,.06),0 8px 24px rgba(28,26,23,.08);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -60,8 +61,8 @@ h1,h2,h3{font-family:'Baloo 2',system-ui,sans-serif;color:var(--navy);line-heigh
 /* ---------- hero ---------- */
 .hero{padding:20px 0 8px}
 .hero .wrap{display:grid;gap:22px}
-.hero-img{border-radius:24px;overflow:hidden;box-shadow:var(--shadow);background:var(--sky-2);aspect-ratio:900/1234;max-height:72vh}
-.hero-img img{width:100%;height:100%;object-fit:cover;object-position:top}
+.hero-img{border-radius:24px;overflow:hidden;box-shadow:var(--shadow);background:#2A2826;aspect-ratio:1/1;max-height:72vh;margin-inline:auto;width:100%;max-width:72vh}
+.hero-img img{width:100%;height:100%;object-fit:contain}
 .hero h1{font-size:clamp(34px,8.5vw,58px);font-weight:800;text-wrap:balance}
 .hero p.lead{font-size:17px;color:var(--muted);margin:12px 0 0;max-width:46ch}
 .avail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0 0;max-width:460px}
@@ -119,9 +120,9 @@ h1,h2,h3{font-family:'Baloo 2',system-ui,sans-serif;color:var(--navy);line-heigh
 .badge{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .badge.ok{background:var(--ok);color:#fff}
 .badge.few{background:var(--sun);color:var(--ink)}
-.badge.full{background:#E9EDF3;color:var(--muted)}
-.count{position:absolute;right:12px;top:12px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(14,42,99,.72);color:#fff;pointer-events:none}
-.nofoto{aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--navy);background:linear-gradient(160deg,var(--sky-2),#F5FAFF);font-family:'Baloo 2';font-weight:700;font-size:20px;text-align:center;padding:16px}
+.badge.full{background:#ECE8E0;color:var(--muted)}
+.count{position:absolute;right:12px;top:12px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(28,26,23,.72);color:#fff;pointer-events:none}
+.nofoto{aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--navy);background:linear-gradient(160deg,var(--sky-2),#FBF8F2);font-family:'Baloo 2';font-weight:700;font-size:20px;text-align:center;padding:16px}
 .nofoto svg{width:44px;height:44px;opacity:.6}
 
 /* ---------- detail ---------- */
@@ -166,20 +167,20 @@ h1,h2,h3{font-family:'Baloo 2',system-ui,sans-serif;color:var(--navy);line-heigh
 
 /* ---------- tentang & footer ---------- */
 .about{background:var(--navy);color:#fff;border-radius:24px;padding:26px 22px;margin-top:8px}
-.about h2{color:#fff;font-size:28px;margin-bottom:8px}
-.about p{margin:0;color:#D7E3F7;max-width:68ch;white-space:pre-line}
+.about h2{color:var(--sun);font-size:28px;margin-bottom:8px}
+.about p{margin:0;color:#E6DCC6;max-width:68ch;white-space:pre-line}
 footer{padding:36px 0 120px;color:var(--muted);font-size:14px;text-align:center}
 footer b{color:var(--navy)}
 @media (min-width:900px){footer{padding-bottom:48px}}
 
 /* ---------- WA melayang (HP) ---------- */
 .float{position:fixed;left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;gap:8px}
-.float .btn{flex:1;min-width:0;padding:12px 14px;box-shadow:0 8px 24px rgba(14,42,99,.28)}
+.float .btn{flex:1;min-width:0;padding:12px 14px;box-shadow:0 8px 24px rgba(28,26,23,.28)}
 .float .btn.navy{flex:0 0 auto}
 @media (min-width:900px){.float{display:none}}
 
 /* ---------- lightbox ---------- */
-.lb{position:fixed;inset:0;z-index:60;background:#060D1E;display:flex;flex-direction:column}
+.lb{position:fixed;inset:0;z-index:60;background:#0D0C0A;display:flex;flex-direction:column}
 .lb-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;color:#fff;font-weight:700}
 .lb-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .lb-x svg{width:22px;height:22px}
@@ -191,7 +192,7 @@ footer b{color:var(--navy)}
 .lb .car-nav{opacity:1}
 
 /* ---------- loading ---------- */
-.sk{background:linear-gradient(90deg,#E3EDF9 25%,#F1F6FD 50%,#E3EDF9 75%);background-size:300% 100%;animation:sk 1.3s infinite linear;border-radius:12px}
+.sk{background:linear-gradient(90deg,#ECE4D4 25%,#F6F2EA 50%,#ECE4D4 75%);background-size:300% 100%;animation:sk 1.3s infinite linear;border-radius:12px}
 @keyframes sk{from{background-position:100% 0}to{background-position:0 0}}
 .msg{background:#fff;border-radius:var(--r);padding:28px 20px;text-align:center;box-shadow:var(--shadow)}
 .msg b{display:block;font-size:18px;color:var(--navy);margin-bottom:6px}
@@ -200,7 +201,7 @@ footer b{color:var(--navy)}
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <a class="brand" href="#"><img src="icon-192.png" alt=""><span id="brandName">Kos Budi</span></a>
+  <a class="brand" href="#"><img src="icon-192.png" alt=""><span id="brandName">Kos Budi Suciati</span></a>
   <a class="btn wa" id="topWa" href="#" target="_blank" rel="noopener" hidden></a>
 </div></header>
 <main id="app"></main>
